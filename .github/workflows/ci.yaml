@@ -12,10 +12,7 @@ on:
   merge_group:
     types:
       - checks_requested
-  # But don't trigger on tags, as they are covered by the "release.yaml" workflow
-  # trigger nightly, to ensure it still works with newer data
-  schedule:
-    - cron: "45 2 * * *"
+
 
 permissions:
   contents: read
