@@ -42,7 +42,7 @@ the [`ToString`](https://doc.rust-lang.org/std/string/trait.ToString.html) trait
 use std::string::ToString;
 
 fn example() {
-    let canonical = package::PackageUrl::new("cargo", "packageurl")
+    let canonical = packageurl::PackageUrl::new("cargo", "packageurl")
         .expect("only fails if type is invalid")
         .with_version("0.3.0")
         .to_string();
