@@ -13,7 +13,7 @@ repository = "https://github.com/scm-rs/packageurl-rs"
 readme = "README.md"
 keywords = ["purl", "package-url"]
 categories = ["parser-implementations", "encoding", "development-tools"]
-rust-version = "1.81.0" # due to litemap
+rust-version = "1.82.0"
 
 [dependencies]
 percent-encoding = "2.1.0"
