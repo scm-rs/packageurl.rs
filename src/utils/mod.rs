@@ -21,8 +21,9 @@ pub fn cut(input: &str, sep: u8) -> (&str, &str) {
     }
 }
 
-pub(crate) fn to_lowercase(s: Cow<str>) -> Cow<str> {
-    if !s.chars().any(|c| c.is_uppercase()) {
+pub(crate) fn to_lowercase<'a>(s: impl Into<Cow<'a, str>>) -> Cow<'a, str> {
+    let s = s.into();
+    if s.chars().any(|c| c.is_uppercase()) {
         Cow::Owned(s.to_lowercase())
     } else {
         s
@@ -46,5 +47,14 @@ mod tests {
         let buf = "A:B:C";
         assert_eq!(rcut(buf, b':'), ("A:B", "C"));
         assert_eq!(rcut(buf, b','), ("", "A:B:C"));
+    }
+
+    #[test]
+    fn to_lowercase_simple() {
+        assert_eq!(to_lowercase("foo"), "foo");
+        assert_eq!(to_lowercase("Foo"), "foo");
+        assert_eq!(to_lowercase("FoO"), "foo");
+        assert_eq!(to_lowercase("fOo"), "foo");
+        assert_eq!(to_lowercase("FOO"), "foo");
     }
 }
