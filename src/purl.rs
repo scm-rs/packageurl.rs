@@ -12,7 +12,7 @@ use serde::{Deserialize, Serialize};
 use super::errors::Error;
 use super::errors::Result;
 use super::parser;
-use super::utils::PercentCodec;
+use super::utils::{to_lowercase, PercentCodec};
 use super::validation;
 
 const ENCODE_SET: &AsciiSet = &percent_encoding::CONTROLS
@@ -84,21 +84,14 @@ impl<'a> PackageUrl<'a> {
         let mut t = ty.into();
         let mut n = name.into();
         if validation::is_type_valid(&t) {
-            // lowercase type if needed
-            if !t.chars().all(|c| c.is_uppercase()) {
-                t = Cow::Owned(t.to_lowercase());
-            }
+            t = to_lowercase(t);
             // lowercase name if required by type and needed
             match t.as_ref() {
                 "bitbucket" | "deb" | "github" | "hex" | "npm" => {
-                    if !n.chars().all(|c| c.is_uppercase()) {
-                        n = Cow::Owned(n.to_lowercase());
-                    }
+                    n = to_lowercase(n);
                 }
                 "pypi" => {
-                    if !n.chars().all(|c| c.is_uppercase()) {
-                        n = Cow::Owned(n.to_lowercase());
-                    }
+                    n = to_lowercase(n);
                     if n.chars().any(|c| c == '_') {
                         n = Cow::Owned(n.replace('_', "-"));
                     }
@@ -166,9 +159,7 @@ impl<'a> PackageUrl<'a> {
         let mut n = namespace.into();
         match self.ty.as_ref() {
             "bitbucket" | "deb" | "github" | "golang" | "hex" | "rpm" => {
-                if n.chars().any(|c| c.is_uppercase()) {
-                    n = Cow::Owned(n.to_lowercase());
-                }
+                n = to_lowercase(n);
             }
             _ => {}
         }
@@ -238,9 +229,7 @@ impl<'a> PackageUrl<'a> {
         if !validation::is_qualifier_key_valid(&k) {
             Err(Error::InvalidKey(k.into()))
         } else {
-            if k.chars().any(|c| c.is_uppercase()) {
-                k = Cow::Owned(k.to_lowercase());
-            }
+            k = to_lowercase(k);
             self.qualifiers.insert(k, value.into());
             Ok(self)
         }
