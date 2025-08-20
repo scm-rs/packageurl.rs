@@ -66,7 +66,7 @@ impl<'a> PackageUrl<'a> {
     /// cannot contain spaces.
     ///
     /// # Name
-    /// The package name will be canonicalize depending on the type: for instance,
+    /// The package name will be canonicalized depending on the type: for instance,
     /// 'bitbucket' packages have a case-insensitive name, so the name will be
     /// lowercased if needed.
     ///
@@ -152,20 +152,31 @@ impl<'a> PackageUrl<'a> {
     }
 
     /// Assign a namespace to the package.
-    pub fn with_namespace<N>(&mut self, namespace: N) -> &mut Self
+    pub fn with_namespace<N>(&mut self, namespace: N) -> Result<&mut Self>
     where
         N: Into<Cow<'a, str>>,
     {
+        // Fail if namespace is prohibited for this type
+        if matches!(
+            self.ty.as_ref(),
+            "bitnami" | "cargo" | "cocoapods" | "conda" | "cran" | "gem"
+            | "hackage" | "mlflow" | "nuget" | "oci" | "pub" | "pypi"
+        ) {
+            return Err(Error::TypeProhibitsNamespace(self.ty.to_string()))
+        }
+
+        // Lowercase namespace if needed for this type
         let mut n = namespace.into();
         match self.ty.as_ref() {
-            "bitbucket" | "deb" | "github" | "golang" | "hex" | "rpm" => {
+            "apk" | "bitbucket" | "composer" | "deb" | "github" | "golang"
+            | "hex" | "qpkg" | "rpm" => {
                 n = to_lowercase(n);
             }
             _ => {}
         }
 
         self.namespace = Some(n);
-        self
+        Ok(self)
     }
 
     /// Clear the namespace
@@ -367,6 +378,7 @@ mod tests {
         let purl_string = PackageUrl::new("type", "name")
             .unwrap()
             .with_namespace("name/space")
+            .unwrap()
             .with_version("version")
             .with_subpath("sub/path")
             .unwrap()
