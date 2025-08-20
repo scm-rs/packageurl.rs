@@ -186,12 +186,12 @@ impl<'a> PackageUrl<'a> {
     }
 
     /// Assign a version to the package.
-    pub fn with_version<V>(&mut self, version: V) -> &mut Self
+    pub fn with_version<V>(&mut self, version: V) -> Result<&mut Self>
     where
         V: Into<Cow<'a, str>>,
     {
         self.version = Some(version.into());
-        self
+        Ok(self)
     }
 
     /// Clear the version
@@ -274,10 +274,10 @@ impl FromStr for PackageUrl<'static> {
 
         let mut purl = Self::new(ty, name)?;
         if let Some(ns) = namespace {
-            purl.with_namespace(ns);
+            purl.with_namespace(ns)?;
         }
         if let Some(v) = version {
-            purl.with_version(v);
+            purl.with_version(v)?;
         }
         if let Some(sp) = subpath {
             purl.with_subpath(sp)?;
@@ -380,6 +380,7 @@ mod tests {
             .with_namespace("name/space")
             .unwrap()
             .with_version("version")
+            .unwrap()
             .with_subpath("sub/path")
             .unwrap()
             .add_qualifier("k1", "v1")
