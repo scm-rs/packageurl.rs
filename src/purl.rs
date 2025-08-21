@@ -157,19 +157,19 @@ impl<'a> PackageUrl<'a> {
         N: Into<Cow<'a, str>>,
     {
         // Fail if namespace is prohibited for this type
-        if matches!(
-            self.ty.as_ref(),
-            "bitnami" | "cargo" | "cocoapods" | "conda" | "cran" | "gem"
-            | "hackage" | "mlflow" | "nuget" | "oci" | "pub" | "pypi"
-        ) {
-            return Err(Error::TypeProhibitsNamespace(self.ty.to_string()))
+        match self.ty.as_ref() {
+            "bitnami" | "cargo" | "cocoapods" | "conda" | "cran" | "gem" | "hackage" | "mlflow"
+            | "nuget" | "oci" | "pub" | "pypi" => {
+                return Err(Error::TypeProhibitsNamespace(self.ty.to_string()));
+            }
+            _ => {}
         }
 
         // Lowercase namespace if needed for this type
         let mut n = namespace.into();
         match self.ty.as_ref() {
-            "apk" | "bitbucket" | "composer" | "deb" | "github" | "golang"
-            | "hex" | "qpkg" | "rpm" => {
+            "apk" | "bitbucket" | "composer" | "deb" | "github" | "golang" | "hex" | "qpkg"
+            | "rpm" => {
                 n = to_lowercase(n);
             }
             _ => {}
