@@ -66,7 +66,7 @@ impl<'a> PackageUrl<'a> {
     /// cannot contain spaces.
     ///
     /// # Name
-    /// The package name will be canonicalize depending on the type: for instance,
+    /// The package name will be canonicalized depending on the type: for instance,
     /// 'bitbucket' packages have a case-insensitive name, so the name will be
     /// lowercased if needed.
     ///
@@ -152,20 +152,31 @@ impl<'a> PackageUrl<'a> {
     }
 
     /// Assign a namespace to the package.
-    pub fn with_namespace<N>(&mut self, namespace: N) -> &mut Self
+    pub fn with_namespace<N>(&mut self, namespace: N) -> Result<&mut Self>
     where
         N: Into<Cow<'a, str>>,
     {
+        // Fail if namespace is prohibited for this type
+        match self.ty.as_ref() {
+            "bitnami" | "cargo" | "cocoapods" | "conda" | "cran" | "gem" | "hackage" | "mlflow"
+            | "nuget" | "oci" | "pub" | "pypi" => {
+                return Err(Error::TypeProhibitsNamespace(self.ty.to_string()));
+            }
+            _ => {}
+        }
+
+        // Lowercase namespace if needed for this type
         let mut n = namespace.into();
         match self.ty.as_ref() {
-            "bitbucket" | "deb" | "github" | "golang" | "hex" | "rpm" => {
+            "apk" | "bitbucket" | "composer" | "deb" | "github" | "golang" | "hex" | "qpkg"
+            | "rpm" => {
                 n = to_lowercase(n);
             }
             _ => {}
         }
 
         self.namespace = Some(n);
-        self
+        Ok(self)
     }
 
     /// Clear the namespace
@@ -175,12 +186,12 @@ impl<'a> PackageUrl<'a> {
     }
 
     /// Assign a version to the package.
-    pub fn with_version<V>(&mut self, version: V) -> &mut Self
+    pub fn with_version<V>(&mut self, version: V) -> Result<&mut Self>
     where
         V: Into<Cow<'a, str>>,
     {
         self.version = Some(version.into());
-        self
+        Ok(self)
     }
 
     /// Clear the version
@@ -263,10 +274,10 @@ impl FromStr for PackageUrl<'static> {
 
         let mut purl = Self::new(ty, name)?;
         if let Some(ns) = namespace {
-            purl.with_namespace(ns);
+            purl.with_namespace(ns)?;
         }
         if let Some(v) = version {
-            purl.with_version(v);
+            purl.with_version(v)?;
         }
         if let Some(sp) = subpath {
             purl.with_subpath(sp)?;
@@ -367,7 +378,9 @@ mod tests {
         let purl_string = PackageUrl::new("type", "name")
             .unwrap()
             .with_namespace("name/space")
+            .unwrap()
             .with_version("version")
+            .unwrap()
             .with_subpath("sub/path")
             .unwrap()
             .add_qualifier("k1", "v1")

@@ -12,6 +12,8 @@ pub enum Error {
     InvalidKey(String),
     #[error("missing name")]
     MissingName,
+    #[error("no namespace allowed for type {0:?}")]
+    TypeProhibitsNamespace(String),
     #[error("invalid namespace component: {0:?}")]
     InvalidNamespaceComponent(String),
     #[error("missing scheme")]

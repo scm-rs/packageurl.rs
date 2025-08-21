@@ -46,11 +46,11 @@ macro_rules! spec_tests {
                 .unwrap();
 
                 if let Some(ref ns) = TEST_CASE.namespace {
-                    purl.with_namespace(ns.as_ref());
+                    purl.with_namespace(ns.as_ref()).unwrap();
                 }
 
                 if let Some(ref v) = TEST_CASE.version {
-                    purl.with_version(v.as_ref());
+                    purl.with_version(v.as_ref()).unwrap();
                 }
 
                 if let Some(ref sp) = TEST_CASE.subpath {

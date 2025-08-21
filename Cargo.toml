@@ -1,6 +1,6 @@
 [package]
 name = "packageurl"
-version = "0.5.0"
+version = "0.6.0-rc.1"
 edition = "2021"
 authors = [
     "Martin Larralde <martin.larralde@embl.de>",
@@ -16,20 +16,19 @@ categories = ["parser-implementations", "encoding", "development-tools"]
 rust-version = "1.82.0"
 
 [dependencies]
-percent-encoding = "2.1.0"
-thiserror = "2.0.12"
+percent-encoding = "2"
+thiserror = "2"
 
-memchr = { version = "2.4.0", optional = true }
-serde = { version = "1.0.0", optional = true, features = ["derive"] }
+memchr = { version = "2", optional = true }
+serde = { version = "1", optional = true, features = ["derive"] }
 
 [features]
 default = []
 
 [dev-dependencies]
-criterion = "0.5.1"
-rstest = "0.25.0"
-serde = { version = "1.0.0", features = ["derive"] }
-serde_json = "1.0.13"
+criterion = "0.7"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
 url = "2"
 
 [[bench]]
