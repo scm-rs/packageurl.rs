@@ -1,6 +1,6 @@
 #
 
-`packageurl-rs` [![Star me](https://img.shields.io/github/stars/scm-rs/packageurl.rs.svg?style=social&label=Star)](https://github.com/scm-rs/packageurl.rs/stargazers)
+`packageurl.rs` [![Star me](https://img.shields.io/github/stars/scm-rs/packageurl.rs.svg?style=social&label=Star)](https://github.com/scm-rs/packageurl.rs/stargazers)
 
 *Read and generate Package URLs in Rust.*
 
@@ -74,7 +74,7 @@ a changelog as part of the [GitHub releases](https://github.com/scm-rs/packageur
 ## 💭 Feedback
 
 Found a bug? Have an enhancement request? Head over to the
-[GitHub issue tracker](https://github.com/scm-rs/packageurl-rs/issues) of the project if
+[GitHub issue tracker](https://github.com/scm-rs/packageurl.rs/issues) of the project if
 you need to report or ask something. If you are filling in on a bug, please include as much
 information as you can about the issue, and try to recreate the same bug in a simple, easily
 reproducible situation.

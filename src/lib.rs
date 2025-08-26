@@ -33,7 +33,7 @@
 //! [`FromStr`]: https://doc.rust-lang.org/std/str/trait.FromStr.html
 //! [`PackageUrl`]: example_generated/struct.PackageUrl.html
 //! [`'static`]: https://doc.rust-lang.org/reference/items/static-items.html#static-lifetime-elision
-#![doc(issue_tracker_base_url = "https://github.com/althonos/packageurl-rs/issues/")]
+#![doc(issue_tracker_base_url = "https://github.com/althonos/packageurl.rs/issues/")]
 
 mod errors;
 mod parser;
