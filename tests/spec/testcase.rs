@@ -12,7 +12,6 @@ pub enum PurlOrString<'a> {
 
 
 #[derive(Deserialize)]
-#[allow(dead_code)]
 pub struct PurlComponents<'a> {
     #[serde(rename = "type")]
     pub ty: Option<Cow<'a, str>>,

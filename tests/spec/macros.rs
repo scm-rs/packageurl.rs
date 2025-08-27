@@ -125,7 +125,7 @@ pub fn run_tests_from_spec(path: &Path) {
     }
 }
 
-#[macro_export]
+
 macro_rules! generate_json_tests {
     ($($test_name:ident => $file_path:expr),* $(,)?) => {
         $(
