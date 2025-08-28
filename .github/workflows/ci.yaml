@@ -19,18 +19,82 @@ permissions:
 
 jobs:
 
-  common:
-    uses: scm-rs/shared-workflows/.github/workflows/ci.yaml@main
-
-  ci:
+  msrv:
     runs-on: ubuntu-latest
-    needs:
-      - common
-    if: always()
+    outputs:
+      rust-version: ${{ steps.get-version.outputs.rust-version }}
     steps:
-      - name: Success
-        if: ${{ !(contains(needs.*.result, 'failure')) }}
-        run: exit 0
-      - name: Failure
-        if: ${{ contains(needs.*.result, 'failure') }}
-        run: exit 1
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: Extract version
+        id: get-version
+        run: |
+          MSRV=$(cargo metadata --no-deps --format-version=1 | jq -r '.packages[0].rust_version')
+          echo "rust-version=$MSRV" >> $GITHUB_OUTPUT
+      - name: Show version
+        run: |
+          echo "MSRV: ${{ steps.get-version.outputs.rust-version }}"
+
+  preflight:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - uses: webiny/action-conventional-commits@v1.3.0
+
+      - uses: Swatinem/rust-cache@v2
+      - uses: obi1kenobi/cargo-semver-checks-action@v2
+
+      - name: Check formatting
+        run: cargo fmt --check
+
+  check:
+    needs:
+      - msrv
+      - preflight
+    strategy:
+      matrix:
+        rust:
+          - stable
+          - ${{ needs.msrv.outputs.rust-version }}
+        os:
+          - ubuntu-22.04
+          - windows-2022
+          - macos-14
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Dump matrix config
+        run: echo "${{ toJSON(matrix) }}"
+
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Install Rust ${{ matrix.rust }}
+        run: rustup install ${{ matrix.rust }} --no-self-update --component clippy
+
+      - name: Tree
+        run: cargo +${{ matrix.rust }} tree
+
+      - name: Clippy
+        run: cargo +${{ matrix.rust }} clippy --all-targets --tests --bins --all -- -D warnings
+
+      - name: Test
+        run: cargo +${{ matrix.rust }} test
+
+      - name: Install binstall
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
+
+      - name: Install cargo-all-features
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: cargo binstall -y cargo-all-features --force
+
+      - name: Check (all features)
+        run: cargo check-all-features
