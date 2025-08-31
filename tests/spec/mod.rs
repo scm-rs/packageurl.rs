@@ -4,28 +4,40 @@
 mod macros;
 mod testcase;
 
-spec_tests!(type_required, "a type is always required");
-spec_tests!(scheme_required, "a scheme is always required");
-spec_tests!(name_required, "a name is required");
-spec_tests!(invalid_qualifier_key, "checks for invalid qualifier keys");
-spec_tests!(gem, "Java gem can use a qualifier");
-spec_tests!(npm, "npm can be scoped");
-spec_tests!(rpm, "rpm often use qualifiers");
-spec_tests!(nuget, "nuget names are case sensitive");
-spec_tests!(pypi, "pypi names have special rules and not case sensitive");
-spec_tests!(debian, "debian can use qualifiers");
-spec_tests!(bitbucket, "bitbucket namespace and name should be lowercased");
-spec_tests!(github, "github namespace and name should be lowercased");
-spec_tests!(docker, "docker uses qualifiers and hash image id as versions");
-spec_tests!(maven, "valid maven purl");
-spec_tests!(maven_basic, "basic valid maven purl without version");
-spec_tests!(maven_case_sensitive, "valid maven purl with case sensitive namespace and name");
-spec_tests!(maven_space, "valid maven purl containing a space in the version and qualifier");
-spec_tests!(go_subpath, "valid go purl without version and with subpath");
-spec_tests!(go_version, "valid go purl with version and subpath");
-spec_tests!(maven_qualifiers, "maven often uses qualifiers");
-spec_tests!(maven_pom, "maven pom reference");
-spec_tests!(maven_type, "maven can come with a type qualifier");
-spec_tests!(simple_slash, "slash / after scheme is not significant");
-spec_tests!(double_slash, "double slash // after scheme is not significant");
-spec_tests!(triple_slash, "slash /// after type  is not significant");
+
+generate_json_tests! {
+    alpm_test          => "tests/spec/purl-spec/tests/types/alpm-test.json",
+    apk_test           => "tests/spec/purl-spec/tests/types/apk-test.json",
+    bintray_test       => "tests/spec/purl-spec/tests/types/bintray-test.json",
+    bitbucket_test     => "tests/spec/purl-spec/tests/types/bitbucket-test.json",
+    bitnami_test       => "tests/spec/purl-spec/tests/types/bitnami-test.json",
+    cargo_test         => "tests/spec/purl-spec/tests/types/cargo-test.json",
+    cocoapods_test     => "tests/spec/purl-spec/tests/types/cocoapods-test.json",
+    // composer_test      => "tests/spec/purl-spec/tests/types/composer-test.json",
+    // conan_test         => "tests/spec/purl-spec/tests/types/conan-test.json",
+    conda_test         => "tests/spec/purl-spec/tests/types/conda-test.json",
+    // cpan_test          => "tests/spec/purl-spec/tests/types/cpan-test.json",
+    // cran_test          => "tests/spec/purl-spec/tests/types/cran-test.json",
+    deb_test           => "tests/spec/purl-spec/tests/types/deb-test.json",
+    docker_test        => "tests/spec/purl-spec/tests/types/docker-test.json",
+    gem_test           => "tests/spec/purl-spec/tests/types/gem-test.json",
+    generic_test       => "tests/spec/purl-spec/tests/types/generic-test.json",
+    github_test        => "tests/spec/purl-spec/tests/types/github-test.json",
+    golang_test        => "tests/spec/purl-spec/tests/types/golang-test.json",
+    hackage_test       => "tests/spec/purl-spec/tests/types/hackage-test.json",
+    hex_test           => "tests/spec/purl-spec/tests/types/hex-test.json",
+    // huggingface_test   => "tests/spec/purl-spec/tests/types/huggingface-test.json",
+    luarocks_test      => "tests/spec/purl-spec/tests/types/luarocks-test.json",
+    // maven_test         => "tests/spec/purl-spec/tests/types/maven-test.json",
+    // mlflow_test        => "tests/spec/purl-spec/tests/types/mlflow-test.json",
+    // npm_test           => "tests/spec/purl-spec/tests/types/npm-test.json",
+    nuget_test         => "tests/spec/purl-spec/tests/types/nuget-test.json",
+    oci_test           => "tests/spec/purl-spec/tests/types/oci-test.json",
+    pub_test           => "tests/spec/purl-spec/tests/types/pub-test.json",
+    pypi_test          => "tests/spec/purl-spec/tests/types/pypi-test.json",
+    qpkg_test          => "tests/spec/purl-spec/tests/types/qpkg-test.json",
+    rpm_test           => "tests/spec/purl-spec/tests/types/rpm-test.json",
+    swid_test          => "tests/spec/purl-spec/tests/types/swid-test.json",
+    // swift_test         => "tests/spec/purl-spec/tests/types/swift-test.json",
+}
+
