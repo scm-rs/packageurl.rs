@@ -1,15 +1,18 @@
 use std::borrow::Cow;
 use std::collections::HashMap;
+use serde::Deserialize;
 
-// May 20, 2019
-static TEST_SUITE: &[u8] = include_bytes!("test-suite-data.json");
 
 #[derive(Deserialize)]
-#[allow(dead_code)]
-pub struct SpecTestCase<'a> {
-    pub description: Cow<'a, str>,
-    pub purl: Cow<'a, str>,
-    pub canonical_purl: Option<Cow<'a, str>>,
+#[serde(untagged)]
+pub enum PurlOrString<'a> {
+    String(Cow<'a, str>),
+    PurlComponent(PurlComponents<'a>),
+}
+
+
+#[derive(Deserialize)]
+pub struct PurlComponents<'a> {
     #[serde(rename = "type")]
     pub ty: Option<Cow<'a, str>>,
     pub namespace: Option<Cow<'a, str>>,
@@ -17,19 +20,23 @@ pub struct SpecTestCase<'a> {
     pub version: Option<Cow<'a, str>>,
     pub qualifiers: Option<HashMap<Cow<'a, str>, Cow<'a, str>>>,
     pub subpath: Option<Cow<'a, str>>,
-    pub is_invalid: bool,
 }
 
-impl<'a> SpecTestCase<'a> {
-    pub fn new(desc: &'a str) -> Self {
-        if let Ok(::serde_json::Value::Array(v)) = ::serde_json::from_slice(TEST_SUITE) {
-            let json = v
-                .into_iter()
-                .find(|x| x["description"].as_str().unwrap().eq(desc))
-                .unwrap();
-            ::serde_json::from_value(json).unwrap()
-        } else {
-            unreachable!("invalid json file")
-        }
-    }
+
+#[derive(Deserialize)]
+#[allow(dead_code)]
+pub struct SpecTestCase<'a> {
+    pub description: Cow<'a, str>,
+    pub test_group: Cow<'a, str>,
+    pub test_type: Cow<'a, str>,
+    pub input: PurlOrString<'a>,
+    pub expected_output: Option<PurlOrString<'a>>,
+    pub expected_failure: bool,
+    pub expected_failure_reason: Option<Cow<'a, str>>,
+}
+
+
+#[derive(Deserialize)]
+pub struct TestSuite<'a> {
+    pub tests: Vec<SpecTestCase<'a>>,
 }
