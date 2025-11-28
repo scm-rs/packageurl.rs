@@ -26,8 +26,6 @@ const ENCODE_SET: &AsciiSet = &percent_encoding::CONTROLS
     .add(b'?')
     .add(b'{')
     .add(b'}')
-    // .add(b'/')
-    // .add(b':')
     .add(b';')
     .add(b'=')
     .add(b'+')
@@ -37,6 +35,8 @@ const ENCODE_SET: &AsciiSet = &percent_encoding::CONTROLS
     .add(b']')
     .add(b'^')
     .add(b'|');
+
+const NAME_ENCODE_SET: &AsciiSet = &ENCODE_SET.add(b'/');
 
 /// A Package URL.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -301,13 +301,13 @@ impl Display for PackageUrl<'_> {
 
         // Namespace: percent-encode each component
         if let Some(ref ns) = self.namespace {
-            for component in ns.split('/').map(|s| s.encode(ENCODE_SET)) {
+            for component in ns.split('/').map(|s| s.encode(NAME_ENCODE_SET)) {
                 component.fmt(f).and(f.write_str("/"))?;
             }
         }
 
         // Name: percent-encode the name
-        self.name.encode(ENCODE_SET).fmt(f)?;
+        self.name.encode(NAME_ENCODE_SET).fmt(f)?;
 
         // Version: percent-encode the version
         if let Some(ref v) = self.version {
@@ -393,9 +393,18 @@ mod tests {
 
     #[test]
     fn test_percent_encoding_idempotent() {
-        let orig = "pkg:brew/openssl%25401.1@1.1.1w";
+        let orig = "pkg:brew/open%2Fssl%25401.1@1.1.1w";
         let round_trip = orig.parse::<PackageUrl>().unwrap().to_string();
         assert_eq!(orig, round_trip);
+    }
+
+    #[test]
+    fn test_percent_encoded_name() {
+        let raw_purl = "pkg:type/name/space/first%2Fname";
+        let purl = PackageUrl::from_str(raw_purl).unwrap();
+        assert_eq!(purl.ty(), "type");
+        assert_eq!(purl.namespace(), Some("name/space"));
+        assert_eq!(purl.name(), "first/name");
     }
 
     #[test]
