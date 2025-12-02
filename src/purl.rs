@@ -12,7 +12,7 @@ use serde::{Deserialize, Serialize};
 use super::errors::Error;
 use super::errors::Result;
 use super::parser;
-use super::utils::{to_lowercase, PercentCodec};
+use super::utils::{PercentCodec, to_lowercase};
 use super::validation;
 
 const ENCODE_SET: &AsciiSet = &percent_encoding::CONTROLS
@@ -418,7 +418,10 @@ mod tests {
         )
         .unwrap();
         let encoded = purl.to_string();
-        assert_eq!(encoded, "pkg:deb/ubuntu/gnome-calculator@1:41.1-2ubuntu2?vcs_url=git%2Bhttps://salsa.debian.org/gnome-team/gnome-calculator.git%40debian/1%2541.1-2");
+        assert_eq!(
+            encoded,
+            "pkg:deb/ubuntu/gnome-calculator@1:41.1-2ubuntu2?vcs_url=git%2Bhttps://salsa.debian.org/gnome-team/gnome-calculator.git%40debian/1%2541.1-2"
+        );
     }
 
     #[cfg(feature = "serde")]
