@@ -26,7 +26,7 @@ const ENCODE_SET: &AsciiSet = &percent_encoding::CONTROLS
     .add(b'?')
     .add(b'{')
     .add(b'}')
-    // .add(b'/')
+    .add(b'/')
     // .add(b':')
     .add(b';')
     .add(b'=')
@@ -413,7 +413,7 @@ mod tests {
         )
         .unwrap();
         let encoded = purl.to_string();
-        assert_eq!(encoded, "pkg:deb/ubuntu/gnome-calculator@1:41.1-2ubuntu2?vcs_url=git%2Bhttps://salsa.debian.org/gnome-team/gnome-calculator.git%40debian/1%2541.1-2");
+        assert_eq!(encoded, "pkg:deb/ubuntu/gnome-calculator@1:41.1-2ubuntu2?vcs_url=git%2Bhttps:%2F%2Fsalsa.debian.org%2Fgnome-team%2Fgnome-calculator.git%40debian%2F1%2541.1-2");
     }
 
     #[cfg(feature = "serde")]
