@@ -87,7 +87,7 @@ impl<'a> PackageUrl<'a> {
             t = to_lowercase(t);
             // lowercase name if required by type and needed
             match t.as_ref() {
-                "bitbucket" | "deb" | "github" | "hex" | "npm" => {
+                "bitbucket" | "deb" | "github" | "hex" | "npm" | "composer" | "mlflow" => {
                     n = to_lowercase(n);
                 }
                 "pypi" => {
@@ -158,7 +158,7 @@ impl<'a> PackageUrl<'a> {
     {
         let mut n = namespace.into();
         match self.ty.as_ref() {
-            "bitbucket" | "deb" | "github" | "golang" | "hex" | "rpm" => {
+            "bitbucket" | "deb" | "github" | "golang" | "hex" | "rpm" | "composer" => {
                 n = to_lowercase(n);
             }
             _ => {}
@@ -179,7 +179,14 @@ impl<'a> PackageUrl<'a> {
     where
         V: Into<Cow<'a, str>>,
     {
-        self.version = Some(version.into());
+        let mut v = version.into();
+        match self.ty.as_ref() {
+            "huggingface" => {
+                v = to_lowercase(v);
+            }
+            _ => {}
+        }
+        self.version = Some(v);
         self
     }
 
@@ -251,12 +258,22 @@ impl FromStr for PackageUrl<'static> {
 
         // Special rules for some types
         match ty.as_ref() {
-            "bitbucket" | "github" => {
+            "bitbucket" | "github" | "composer" => {
                 name = name.to_lowercase();
                 namespace = namespace.map(|ns| ns.to_lowercase());
             }
             "pypi" => {
                 name = name.replace('_', "-").to_lowercase();
+            }
+            "cpan" => {
+                if namespace.is_none() {
+                    return Err(Error::MissingNamespace);
+                }
+            }
+            "cran" => {
+                if version.is_none() {
+                    return Err(Error::MissingVersion);
+                }
             }
             _ => {}
         };

@@ -12,8 +12,12 @@ pub enum Error {
     InvalidKey(String),
     #[error("missing name")]
     MissingName,
+    #[error("missing namespace")]
+    MissingNamespace,
     #[error("invalid namespace component: {0:?}")]
     InvalidNamespaceComponent(String),
+    #[error("missing version")]
+    MissingVersion,
     #[error("missing scheme")]
     MissingScheme,
     #[error("missing type")]
