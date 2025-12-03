@@ -8,7 +8,6 @@ mod testcase;
 generate_json_tests! {
     alpm_test          => "tests/spec/purl-spec/tests/types/alpm-test.json",
     apk_test           => "tests/spec/purl-spec/tests/types/apk-test.json",
-    bintray_test       => "tests/spec/purl-spec/tests/types/bintray-test.json",
     bitbucket_test     => "tests/spec/purl-spec/tests/types/bitbucket-test.json",
     bitnami_test       => "tests/spec/purl-spec/tests/types/bitnami-test.json",
     cargo_test         => "tests/spec/purl-spec/tests/types/cargo-test.json",
@@ -38,6 +37,6 @@ generate_json_tests! {
     qpkg_test          => "tests/spec/purl-spec/tests/types/qpkg-test.json",
     rpm_test           => "tests/spec/purl-spec/tests/types/rpm-test.json",
     swid_test          => "tests/spec/purl-spec/tests/types/swid-test.json",
-    // swift_test         => "tests/spec/purl-spec/tests/types/swift-test.json",
+    swift_test         => "tests/spec/purl-spec/tests/types/swift-test.json",
 }
 
