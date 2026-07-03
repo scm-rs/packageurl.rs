@@ -429,7 +429,9 @@ mod tests {
     fn test_serde() {
         let mut purl = PackageUrl::new("type", "name").unwrap();
         purl.with_namespace("name/space")
+            .unwrap()
             .with_version("version")
+            .unwrap()
             .with_subpath("sub/path")
             .unwrap()
             .add_qualifier("k1", "v1")
