@@ -3,6 +3,13 @@ AFL_SKIP_CPUFREQ = "true"
 AFL_I_DONT_CARE_ABOUT_MISSING_CRASHES = "true"
 
 
+### Test-suite assets ##########################################################
+
+[tasks.update-purl-spec-tests]
+description = "Vendor the purl-spec conformance suite at the pinned commit."
+script = ["./scripts/update-purl-spec-tests.sh"]
+
+
 ### Fuzzing tasks ##############################################################
 
 [tasks.fuzz]
