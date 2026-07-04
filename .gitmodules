@@ -1,0 +1,3 @@
+[submodule "tests/purl-spec"]
+	path = tests/purl-spec
+	url = https://github.com/package-url/purl-spec.git

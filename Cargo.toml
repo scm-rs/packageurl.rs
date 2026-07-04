@@ -15,6 +15,10 @@ keywords = ["purl", "package-url"]
 categories = ["parser-implementations", "encoding", "development-tools"]
 rust-version = "1.85.0"
 
+# The purl-spec conformance suite is the tests/purl-spec submodule and is
+# test-only; keep it out of the published crate.
+exclude = ["/tests/purl-spec/"]
+
 [dependencies]
 percent-encoding = "2"
 thiserror = "2"
