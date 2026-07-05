@@ -111,6 +111,7 @@ struct Components {
 // ---------------------------------------------------------------------------
 
 #[derive(Clone, Copy)]
+#[allow(dead_code)]
 enum Category {
     /// Qualifier values are canonicalized without encoding `/` or `,`.
     QualifierEncoding,
@@ -142,98 +143,9 @@ struct KnownGap {
     note: &'static str,
 }
 
-/// Cases the crate does not yet satisfy, keyed by `logical_key` and grouped by
-/// cause. Rebuild from the `PURL_CONFORMANCE_DUMP` block after refreshing the suite.
-/// Total: 77 (QualifierEncoding: 45, Normalization: 5, ParseAcceptsInvalid: 12, ParseRejectsValid: 2, BuildAcceptsInvalid: 13).
-#[rustfmt::skip]
-static KNOWN_GAPS: &[KnownGap] = &[
-    // ── Qualifier value encoding: '/' and ',' are not percent-encoded (issue category 1). ──
-    KnownGap { key: "bazel-test.json::build::build[type=bazel|ns=|name=rules_java|ver=7.8.0|qual=repository_url=https://example.org/bazel-registry|sub=]", category: Category::QualifierEncoding, note: "qualifier value '/' and ',' left literal (ENCODE_SET omits them)" },
-    KnownGap { key: "bazel-test.json::roundtrip::purl=pkg:bazel/rules_java@7.8.0?repository_url=https://bcr.bazel.build/", category: Category::QualifierEncoding, note: "qualifier value '/' and ',' left literal (ENCODE_SET omits them)" },
-    KnownGap { key: "bazel-test.json::roundtrip::purl=pkg:bazel/rules_java@7.8.0?repository_url=https://example.org/bazel-registry/", category: Category::QualifierEncoding, note: "qualifier value '/' and ',' left literal (ENCODE_SET omits them)" },
-    KnownGap { key: "generic-test.json::build::build[type=generic|ns=|name=bitwarderl|ver=|qual=vcs_url=git+https://git.fsfe.org/dxtr/bitwarderl@cc55108da32|sub=]", category: Category::QualifierEncoding, note: "qualifier value '/' and ',' left literal (ENCODE_SET omits them)" },
-    KnownGap { key: "generic-test.json::build::build[type=generic|ns=|name=openssl|ver=1.1.10g|qual=checksum=sha256:de4d501267da,download_url=https://openssl.org/source/openssl-1.1.0g.tar.gz|sub=]", category: Category::QualifierEncoding, note: "qualifier value '/' and ',' left literal (ENCODE_SET omits them)" },
-    KnownGap { key: "generic-test.json::roundtrip::purl=pkg:generic/bitwarderl?vcs_url=git%2Bhttps://git.fsfe.org/dxtr/bitwarderl%40cc55108da32", category: Category::QualifierEncoding, note: "qualifier value '/' and ',' left literal (ENCODE_SET omits them)" },
-    KnownGap { key: "generic-test.json::roundtrip::purl=pkg:generic/openssl@1.1.10g?download_url=https://openssl.org/source/openssl-1.1.0g.tar.gz&checksum=sha256:de4d501267da", category: Category::QualifierEncoding, note: "qualifier value '/' and ',' left literal (ENCODE_SET omits them)" },
-    KnownGap { key: "hex-test.json::build::build[type=hex|ns=|name=bar|ver=1.2.3|qual=repository_url=https://myrepo.example.com|sub=]", category: Category::QualifierEncoding, note: "qualifier value '/' and ',' left literal (ENCODE_SET omits them)" },
-    KnownGap { key: "hex-test.json::roundtrip::purl=pkg:hex/bar@1.2.3?repository_url=https://myrepo.example.com", category: Category::QualifierEncoding, note: "qualifier value '/' and ',' left literal (ENCODE_SET omits them)" },
-    KnownGap { key: "huggingface-test.json::build::build[type=huggingface|ns=microsoft|name=deberta-v3-base|ver=559062ad13d311b87b2c455e67dcd5f1c8f65111|qual=repository_url=https://hub-ci.huggingface.co|sub=]", category: Category::QualifierEncoding, note: "qualifier value '/' and ',' left literal (ENCODE_SET omits them)" },
-    KnownGap { key: "huggingface-test.json::roundtrip::purl=pkg:huggingface/microsoft/deberta-v3-base@559062ad13d311b87b2c455e67dcd5f1c8f65111?repository_url=https://hub-ci.huggingface.co", category: Category::QualifierEncoding, note: "qualifier value '/' and ',' left literal (ENCODE_SET omits them)" },
-    KnownGap { key: "julia-test.json::build::build[type=julia|ns=|name=RegisterQD|ver=0.3.1|qual=repository_url=https://github.com/HolyLab/HolyLabRegistry,uuid=ac24ea0c-1830-11e9-18d4-81f172323054|sub=]", category: Category::QualifierEncoding, note: "qualifier value '/' and ',' left literal (ENCODE_SET omits them)" },
-    KnownGap { key: "julia-test.json::roundtrip::purl=pkg:julia/RegisterQD@0.3.1?repository_url=https://github.com/HolyLab/HolyLabRegistry&uuid=ac24ea0c-1830-11e9-18d4-81f172323054", category: Category::QualifierEncoding, note: "qualifier value '/' and ',' left literal (ENCODE_SET omits them)" },
-    KnownGap { key: "luarocks-test.json::build::build[type=luarocks|ns=username|name=packagename|ver=0.1.0-1|qual=repository_url=https://example.com/private_rocks_server/|sub=]", category: Category::QualifierEncoding, note: "qualifier value '/' and ',' left literal (ENCODE_SET omits them)" },
-    KnownGap { key: "luarocks-test.json::roundtrip::purl=pkg:luarocks/username/packagename@0.1.0-1?repository_url=https://example.com/private_rocks_server/", category: Category::QualifierEncoding, note: "qualifier value '/' and ',' left literal (ENCODE_SET omits them)" },
-    KnownGap { key: "maven-test.json::build::build[type=maven|ns=groovy|name=groovy|ver=1.0|qual=repository_url=https://maven.google.com|sub=]", category: Category::QualifierEncoding, note: "qualifier value '/' and ',' left literal (ENCODE_SET omits them)" },
-    KnownGap { key: "maven-test.json::build::build[type=maven|ns=org.apache.xmlgraphics|name=batik-anim|ver=1.9.1|qual=classifier=foo,repository_url=repo.spring.io/release|sub=]", category: Category::QualifierEncoding, note: "qualifier value '/' and ',' left literal (ENCODE_SET omits them)" },
-    KnownGap { key: "maven-test.json::build::build[type=maven|ns=org.apache.xmlgraphics|name=batik-anim|ver=1.9.1|qual=classifier=sources,repository_url=repo.spring.io/release|sub=]", category: Category::QualifierEncoding, note: "qualifier value '/' and ',' left literal (ENCODE_SET omits them)" },
-    KnownGap { key: "maven-test.json::roundtrip::purl=pkg:Maven/org.apache.xmlgraphics/batik-anim@1.9.1?classifier=sources&repositorY_url=https://repo.spring.io/release", category: Category::QualifierEncoding, note: "qualifier value '/' and ',' left literal (ENCODE_SET omits them)" },
-    KnownGap { key: "maven-test.json::roundtrip::purl=pkg:Maven/org.apache.xmlgraphics/batik-anim@1.9.1?type=pom&repositorY_url=repo.spring.io/release", category: Category::QualifierEncoding, note: "qualifier value '/' and ',' left literal (ENCODE_SET omits them)" },
-    KnownGap { key: "maven-test.json::roundtrip::purl=pkg:maven/groovy/groovy@1.0?repository_url=https://maven.google.com", category: Category::QualifierEncoding, note: "qualifier value '/' and ',' left literal (ENCODE_SET omits them)" },
-    KnownGap { key: "maven-test.json::roundtrip::purl=pkg:maven/org.apache.xmlgraphics/batik-anim@1.9.1?classifier=sources&repository_url=repo.spring.io/release", category: Category::QualifierEncoding, note: "qualifier value '/' and ',' left literal (ENCODE_SET omits them)" },
-    KnownGap { key: "maven-test.json::roundtrip::purl=pkg:maven/org.apache.xmlgraphics/batik-anim@1.9.1?type=war&repository_url=https://repo.spring.io/release", category: Category::QualifierEncoding, note: "qualifier value '/' and ',' left literal (ENCODE_SET omits them)" },
-    KnownGap { key: "mlflow-test.json::build::build[type=mlflow|ns=|name=CreditFraud|ver=3|qual=repository_url=https://westus2.api.azureml.ms/mlflow/v1.0/subscriptions/a50f2011-fab8-4164-af23-c62881ef8c95/resourceGroups/TestResourceGroup/providers/Microsoft.MachineLearningServices/workspaces/TestWorkspace|sub=]", category: Category::QualifierEncoding, note: "qualifier value '/' and ',' left literal (ENCODE_SET omits them)" },
-    KnownGap { key: "mlflow-test.json::build::build[type=mlflow|ns=|name=creditfraud|ver=3|qual=repository_url=https://adb-5245952564735461.0.azuredatabricks.net/api/2.0/mlflow|sub=]", category: Category::QualifierEncoding, note: "qualifier value '/' and ',' left literal (ENCODE_SET omits them)" },
-    KnownGap { key: "mlflow-test.json::build::build[type=mlflow|ns=|name=creditfraud|ver=3|qual=repository_url=https://westus2.api.azureml.ms/mlflow/v1.0/subscriptions/a50f2011-fab8-4164-af23-c62881ef8c95/resourceGroups/TestResourceGroup/providers/Microsoft.MachineLearningServices/workspaces/TestWorkspace|sub=]", category: Category::QualifierEncoding, note: "qualifier value '/' and ',' left literal (ENCODE_SET omits them)" },
-    KnownGap { key: "mlflow-test.json::build::build[type=mlflow|ns=|name=trafficsigns|ver=10|qual=model_uuid=36233173b22f4c89b451f1228d700d49,repository_url=https://adb-5245952564735461.0.azuredatabricks.net/api/2.0/mlflow,run_id=410a3121-2709-4f88-98dd-dba0ef056b0a|sub=]", category: Category::QualifierEncoding, note: "qualifier value '/' and ',' left literal (ENCODE_SET omits them)" },
-    KnownGap { key: "mlflow-test.json::roundtrip::purl=pkg:mlflow/CreditFraud@3?repository_url=https://adb-5245952564735461.0.azuredatabricks.net/api/2.0/mlflow", category: Category::QualifierEncoding, note: "qualifier value '/' and ',' left literal (ENCODE_SET omits them)" },
-    KnownGap { key: "mlflow-test.json::roundtrip::purl=pkg:mlflow/CreditFraud@3?repository_url=https://westus2.api.azureml.ms/mlflow/v1.0/subscriptions/a50f2011-fab8-4164-af23-c62881ef8c95/resourceGroups/TestResourceGroup/providers/Microsoft.MachineLearningServices/workspaces/TestWorkspace", category: Category::QualifierEncoding, note: "qualifier value '/' and ',' left literal (ENCODE_SET omits them)" },
-    KnownGap { key: "mlflow-test.json::roundtrip::purl=pkg:mlflow/creditfraud@3?repository_url=https://adb-5245952564735461.0.azuredatabricks.net/api/2.0/mlflow", category: Category::QualifierEncoding, note: "qualifier value '/' and ',' left literal (ENCODE_SET omits them)" },
-    KnownGap { key: "mlflow-test.json::roundtrip::purl=pkg:mlflow/creditfraud@3?repository_url=https://westus2.api.azureml.ms/mlflow/v1.0/subscriptions/a50f2011-fab8-4164-af23-c62881ef8c95/resourceGroups/TestResourceGroup/providers/Microsoft.MachineLearningServices/workspaces/TestWorkspace", category: Category::QualifierEncoding, note: "qualifier value '/' and ',' left literal (ENCODE_SET omits them)" },
-    KnownGap { key: "mlflow-test.json::roundtrip::purl=pkg:mlflow/trafficsigns@10?model_uuid=36233173b22f4c89b451f1228d700d49&repository_url=https://adb-5245952564735461.0.azuredatabricks.net/api/2.0/mlflow&run_id=410a3121-2709-4f88-98dd-dba0ef056b0a", category: Category::QualifierEncoding, note: "qualifier value '/' and ',' left literal (ENCODE_SET omits them)" },
-    KnownGap { key: "mlflow-test.json::roundtrip::purl=pkg:mlflow/trafficsigns@10?model_uuid=36233173b22f4c89b451f1228d700d49&run_id=410a3121-2709-4f88-98dd-dba0ef056b0a&repository_url=https://adb-5245952564735461.0.azuredatabricks.net/api/2.0/mlflow", category: Category::QualifierEncoding, note: "qualifier value '/' and ',' left literal (ENCODE_SET omits them)" },
-    KnownGap { key: "npm-test.json::build::build[type=npm|ns=|name=mypackage|ver=12.4.5|qual=vcs_url=git://host.com/path/to/repo.git@4345abcd34343|sub=]", category: Category::QualifierEncoding, note: "qualifier value '/' and ',' left literal (ENCODE_SET omits them)" },
-    KnownGap { key: "npm-test.json::roundtrip::purl=pkg:npm/mypackage@12.4.5?vcs_url=git://host.com/path/to/repo.git%404345abcd34343", category: Category::QualifierEncoding, note: "qualifier value '/' and ',' left literal (ENCODE_SET omits them)" },
-    KnownGap { key: "oci-test.json::build::build[type=oci|ns=|name=debian|ver=sha256:244fd47e07d10|qual=arch=amd64,repository_url=docker.io/library/debian,tag=latest|sub=]", category: Category::QualifierEncoding, note: "qualifier value '/' and ',' left literal (ENCODE_SET omits them)" },
-    KnownGap { key: "oci-test.json::build::build[type=oci|ns=|name=debian|ver=sha256:244fd47e07d10|qual=repository_url=ghcr.io/debian,tag=bullseye|sub=]", category: Category::QualifierEncoding, note: "qualifier value '/' and ',' left literal (ENCODE_SET omits them)" },
-    KnownGap { key: "oci-test.json::build::build[type=oci|ns=|name=static|ver=sha256:244fd47e07d10|qual=repository_url=gcr.io/distroless/static,tag=latest|sub=]", category: Category::QualifierEncoding, note: "qualifier value '/' and ',' left literal (ENCODE_SET omits them)" },
-    KnownGap { key: "oci-test.json::roundtrip::purl=pkg:oci/debian@sha256%3A244fd47e07d10?repository_url=docker.io/library/debian&arch=amd64&tag=latest", category: Category::QualifierEncoding, note: "qualifier value '/' and ',' left literal (ENCODE_SET omits them)" },
-    KnownGap { key: "oci-test.json::roundtrip::purl=pkg:oci/debian@sha256%3A244fd47e07d10?repository_url=ghcr.io/debian&tag=bullseye", category: Category::QualifierEncoding, note: "qualifier value '/' and ',' left literal (ENCODE_SET omits them)" },
-    KnownGap { key: "oci-test.json::roundtrip::purl=pkg:oci/static@sha256%3A244fd47e07d10?repository_url=gcr.io/distroless/static&tag=latest", category: Category::QualifierEncoding, note: "qualifier value '/' and ',' left literal (ENCODE_SET omits them)" },
-    KnownGap { key: "otp-test.json::build::build[type=otp|ns=|name=asn1|ver=5.4.1|qual=arch=amd64,platform=linux,repository_url=https://github.com/erlang/otp,vcs_url=git+https://github.com/erlang/otp.git|sub=src/asn1ct.erl]", category: Category::QualifierEncoding, note: "qualifier value '/' and ',' left literal (ENCODE_SET omits them)" },
-    KnownGap { key: "otp-test.json::roundtrip::purl=pkg:otp/asn1@5.4.1?arch=amd64&platform=linux&repository_url=https://github.com/erlang/otp&vcs_url=git%2Bhttps://github.com/erlang/otp.git#src/asn1ct.erl", category: Category::QualifierEncoding, note: "qualifier value '/' and ',' left literal (ENCODE_SET omits them)" },
-    KnownGap { key: "specification-test.json::build::build[type=generic|ns=|name=openssl|ver=1.1.10g|qual=checksum=sha1:ad9503c3e994a4f,sha256:41bf9088b3a1e6c1ef1d|sub=]", category: Category::QualifierEncoding, note: "qualifier value '/' and ',' left literal (ENCODE_SET omits them)" },
-    KnownGap { key: "specification-test.json::roundtrip::purl=pkg:generic/bitwarderl?checksum=sha1:ad9503c3e994a4f%2Csha256:41bf9088b3a1e6c1ef1d", category: Category::QualifierEncoding, note: "qualifier value '/' and ',' left literal (ENCODE_SET omits them)" },
-
-    // ── Type normalization: name/version case rules not applied (issue category 2; also huggingface, mlflow). ──
-    KnownGap { key: "composer-test.json::parse::purl=pkg:composer/Laravel/Laravel@5.5.0", category: Category::Normalization, note: "type-specific name/version normalization not applied" },
-    KnownGap { key: "composer-test.json::roundtrip::purl=pkg:composer/Laravel/Laravel@5.5.0", category: Category::Normalization, note: "type-specific name/version normalization not applied" },
-    KnownGap { key: "huggingface-test.json::parse::purl=pkg:huggingface/EleutherAI/gpt-neo-1.3B@797174552AE47F449AB70B684CABCB6603E5E85E", category: Category::Normalization, note: "type-specific name/version normalization not applied" },
-    KnownGap { key: "huggingface-test.json::roundtrip::purl=pkg:huggingface/EleutherAI/gpt-neo-1.3B@797174552AE47F449AB70B684CABCB6603E5E85E", category: Category::Normalization, note: "type-specific name/version normalization not applied" },
-    KnownGap { key: "mlflow-test.json::parse::purl=pkg:mlflow/CreditFraud@3?repository_url=https://adb-5245952564735461.0.azuredatabricks.net/api/2.0/mlflow", category: Category::Normalization, note: "type-specific name/version normalization not applied" },
-
-    // ── Required/typed components: per-type validity not enforced on parse (issue category 4). ──
-    KnownGap { key: "chrome-extension-test.json::parse::purl=pkg:chrome-extension/44444algnefjeiefhmpklpfiohadpglk", category: Category::ParseAcceptsInvalid, note: "type-specific validity rule not enforced on parse" },
-    KnownGap { key: "chrome-extension-test.json::parse::purl=pkg:chrome-extension/dlpngalgnefjeiefhmpklpfiohadpglk@1.2.3-beta", category: Category::ParseAcceptsInvalid, note: "type-specific validity rule not enforced on parse" },
-    KnownGap { key: "chrome-extension-test.json::parse::purl=pkg:chrome-extension/dlpngalgnefjeiefhmpklpfiohadpglk@1.2.3.4.5", category: Category::ParseAcceptsInvalid, note: "type-specific validity rule not enforced on parse" },
-    KnownGap { key: "chrome-extension-test.json::parse::purl=pkg:chrome-extension/dogs", category: Category::ParseAcceptsInvalid, note: "type-specific validity rule not enforced on parse" },
-    KnownGap { key: "cpan-test.json::parse::purl=pkg:cpan/GDT/URI::PackageURL", category: Category::ParseAcceptsInvalid, note: "type-specific validity rule not enforced on parse" },
-    KnownGap { key: "cpan-test.json::parse::purl=pkg:cpan/LWP::UserAgent@6.7.6", category: Category::ParseAcceptsInvalid, note: "type-specific validity rule not enforced on parse" },
-    KnownGap { key: "julia-test.json::parse::purl=pkg:julia/Dates", category: Category::ParseAcceptsInvalid, note: "type-specific validity rule not enforced on parse" },
-    KnownGap { key: "otp-test.json::parse::purl=pkg:otp/namespace/hex@2.1.1", category: Category::ParseAcceptsInvalid, note: "type-specific validity rule not enforced on parse" },
-    KnownGap { key: "swift-test.json::parse::purl=pkg:swift/Alamofire@5.4.3", category: Category::ParseAcceptsInvalid, note: "type-specific validity rule not enforced on parse" },
-    KnownGap { key: "swift-test.json::parse::purl=pkg:swift/github.com/Alamofire/@5.4.3", category: Category::ParseAcceptsInvalid, note: "type-specific validity rule not enforced on parse" },
-    KnownGap { key: "vcpkg-test.json::parse::purl=pkg:vcpkg/boost/asio@1.84.0", category: Category::ParseAcceptsInvalid, note: "type-specific validity rule not enforced on parse" },
-    KnownGap { key: "vscode-extension-test.json::parse::purl=pkg:vscode-extension/java@1.46.2025091308", category: Category::ParseAcceptsInvalid, note: "type-specific validity rule not enforced on parse" },
-
-    // ── Scoped parsing: an unencoded '@' scope with a subpath is rejected (issue category 3). ──
-    KnownGap { key: "npm-test.json::parse::purl=pkg:npm/@babel/core#/googleapis/api/annotations/", category: Category::ParseRejectsValid, note: "valid purl rejected: unencoded '@' scope with a subpath" },
-    KnownGap { key: "npm-test.json::roundtrip::purl=pkg:npm/@babel/core#/googleapis/api/annotations/", category: Category::ParseRejectsValid, note: "valid purl rejected: unencoded '@' scope with a subpath" },
-
-    // ── Builder validation: the builder accepts components the spec rejects. ──
-    KnownGap { key: "cpan-test.json::build::build[type=cpan|ns=GDT|name=URI::PackageURL|ver=|qual=|sub=]", category: Category::BuildAcceptsInvalid, note: "builder accepts components the spec rejects" },
-    KnownGap { key: "cpan-test.json::build::build[type=cpan|ns=|name=Perl-Version|ver=1.013|qual=|sub=]", category: Category::BuildAcceptsInvalid, note: "builder accepts components the spec rejects" },
-    KnownGap { key: "cran-test.json::build::build[type=cran|ns=|name=|ver=0.9.1|qual=|sub=]", category: Category::BuildAcceptsInvalid, note: "builder accepts components the spec rejects" },
-    KnownGap { key: "hackage-test.json::build::build[type=hackage|ns=|name=|ver=|qual=|sub=]", category: Category::BuildAcceptsInvalid, note: "builder accepts components the spec rejects" },
-    KnownGap { key: "julia-test.json::build::build[type=julia|ns=|name=|ver=1.9.0|qual=uuid=ade2ca70-3891-5945-98fb-dc099432e06a|sub=]", category: Category::BuildAcceptsInvalid, note: "builder accepts components the spec rejects" },
-    KnownGap { key: "opam-test.json::build::build[type=opam|ns=|name=|ver=|qual=|sub=]", category: Category::BuildAcceptsInvalid, note: "builder accepts components the spec rejects" },
-    KnownGap { key: "otp-test.json::build::build[type=otp|ns=namespace|name=hex|ver=2.1.1|qual=|sub=]", category: Category::BuildAcceptsInvalid, note: "builder accepts components the spec rejects" },
-    KnownGap { key: "specification-test.json::build::build[type=maven|ns=|name=|ver=|qual=|sub=]", category: Category::BuildAcceptsInvalid, note: "builder accepts components the spec rejects" },
-    KnownGap { key: "swift-test.json::build::build[type=swift|ns=github.com/Alamofire|name=|ver=5.4.3|qual=|sub=]", category: Category::BuildAcceptsInvalid, note: "builder accepts components the spec rejects" },
-    KnownGap { key: "swift-test.json::build::build[type=swift|ns=|name=Alamofire|ver=5.4.3|qual=|sub=]", category: Category::BuildAcceptsInvalid, note: "builder accepts components the spec rejects" },
-    KnownGap { key: "vcpkg-test.json::build::build[type=vcpkg|ns=boost|name=asio|ver=1.84.0|qual=|sub=]", category: Category::BuildAcceptsInvalid, note: "builder accepts components the spec rejects" },
-    KnownGap { key: "vcpkg-test.json::build::build[type=vcpkg|ns=|name=|ver=1.0.8|qual=|sub=]", category: Category::BuildAcceptsInvalid, note: "builder accepts components the spec rejects" },
-    KnownGap { key: "vscode-extension-test.json::build::build[type=vscode-extension|ns=|name=java|ver=1.46.2025091308|qual=|sub=]", category: Category::BuildAcceptsInvalid, note: "builder accepts components the spec rejects" },
-];
+/// Intentionally emptied in this commit so the conformance test fails and
+/// lists every gap; revert to restore the guarded, green baseline.
+static KNOWN_GAPS: &[KnownGap] = &[];
 
 // ---------------------------------------------------------------------------
 // Evaluation
