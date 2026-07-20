@@ -77,13 +77,14 @@ pub fn parse_qualifiers(input: &str) -> Result<(&str, Vec<(String, String)>)> {
 }
 
 pub fn parse_version(input: &str) -> Result<(&str, Option<String>)> {
-    if let Some(i) = input.quickrfind(b'@') {
-        Ok((
+    match input.quickrfind(b'@') {
+        // An '@' followed by a further '/' sits inside the namespace (an npm
+        // scope like pkg:npm/@babel/core), not in front of a version.
+        Some(i) if !input[i + 1..].contains('/') => Ok((
             &input[..i],
             Some(input[i + 1..].decode().decode_utf8()?.into()),
-        ))
-    } else {
-        Ok((input, None))
+        )),
+        _ => Ok((input, None)),
     }
 }
 
