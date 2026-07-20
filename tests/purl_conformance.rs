@@ -117,8 +117,6 @@ enum Category {
     Normalization,
     /// A type-specific validity rule is not enforced when parsing.
     ParseAcceptsInvalid,
-    /// A valid purl is rejected when parsing.
-    ParseRejectsValid,
     /// The builder accepts components the spec rejects.
     BuildAcceptsInvalid,
 }
@@ -128,7 +126,6 @@ impl Category {
         match self {
             Category::Normalization => "normalization",
             Category::ParseAcceptsInvalid => "parse-accepts-invalid",
-            Category::ParseRejectsValid => "parse-rejects-valid",
             Category::BuildAcceptsInvalid => "build-accepts-invalid",
         }
     }
@@ -142,7 +139,7 @@ struct KnownGap {
 
 /// Cases the crate does not yet satisfy, keyed by `logical_key` and grouped by
 /// cause. Rebuild from the `PURL_CONFORMANCE_DUMP` block after refreshing the suite.
-/// Total: 33 (Normalization: 6, ParseAcceptsInvalid: 12, ParseRejectsValid: 2, BuildAcceptsInvalid: 13).
+/// Total: 31 (Normalization: 6, ParseAcceptsInvalid: 12, BuildAcceptsInvalid: 13).
 #[rustfmt::skip]
 static KNOWN_GAPS: &[KnownGap] = &[
 
@@ -168,9 +165,6 @@ static KNOWN_GAPS: &[KnownGap] = &[
     KnownGap { key: "vcpkg-test.json::parse::purl=pkg:vcpkg/boost/asio@1.84.0", category: Category::ParseAcceptsInvalid, note: "type-specific validity rule not enforced on parse" },
     KnownGap { key: "vscode-extension-test.json::parse::purl=pkg:vscode-extension/java@1.46.2025091308", category: Category::ParseAcceptsInvalid, note: "type-specific validity rule not enforced on parse" },
 
-    // ── Scoped parsing: an unencoded '@' scope with a subpath is rejected (issue category 3). ──
-    KnownGap { key: "npm-test.json::parse::purl=pkg:npm/@babel/core#/googleapis/api/annotations/", category: Category::ParseRejectsValid, note: "valid purl rejected: unencoded '@' scope with a subpath" },
-    KnownGap { key: "npm-test.json::roundtrip::purl=pkg:npm/@babel/core#/googleapis/api/annotations/", category: Category::ParseRejectsValid, note: "valid purl rejected: unencoded '@' scope with a subpath" },
 
     // ── Builder validation: the builder accepts components the spec rejects. ──
     KnownGap { key: "cpan-test.json::build::build[type=cpan|ns=GDT|name=URI::PackageURL|ver=|qual=|sub=]", category: Category::BuildAcceptsInvalid, note: "builder accepts components the spec rejects" },
