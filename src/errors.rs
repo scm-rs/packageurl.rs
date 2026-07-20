@@ -14,6 +14,14 @@ pub enum Error {
     MissingName,
     #[error("no namespace allowed for type {0:?}")]
     TypeProhibitsNamespace(String),
+    #[error("namespace required for type {0:?}")]
+    TypeRequiresNamespace(String),
+    #[error("missing required qualifier {1:?} for type {0:?}")]
+    MissingRequiredQualifier(String, String),
+    #[error("invalid name for type {0:?}: {1:?}")]
+    InvalidName(String, String),
+    #[error("invalid version for type {0:?}: {1:?}")]
+    InvalidVersion(String, String),
     #[error("invalid namespace component: {0:?}")]
     InvalidNamespaceComponent(String),
     #[error("missing scheme")]
