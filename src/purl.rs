@@ -12,6 +12,7 @@ use serde::{Deserialize, Serialize};
 use super::errors::Error;
 use super::errors::Result;
 use super::parser;
+use super::types;
 use super::utils::{PercentCodec, to_lowercase};
 use super::validation;
 
@@ -68,15 +69,16 @@ impl<'a> PackageUrl<'a> {
     /// cannot contain spaces.
     ///
     /// # Name
-    /// The package name will be canonicalized depending on the type: for instance,
-    /// 'bitbucket' packages have a case-insensitive name, so the name will be
-    /// lowercased if needed.
+    /// The package name must be non-empty and will be canonicalized depending
+    /// on the type: for instance, 'bitbucket' packages have a case-insensitive
+    /// name, so the name will be lowercased if needed.
     ///
     /// # Example
     /// ```rust
     /// # extern crate packageurl;
     /// assert!( packageurl::PackageUrl::new("cargo", "packageurl").is_ok() );
     /// assert!( packageurl::PackageUrl::new("bad type", "packageurl").is_err() );
+    /// assert!( packageurl::PackageUrl::new("cargo", "").is_err() );
     /// ```
     pub fn new<T, N>(ty: T, name: N) -> Result<Self>
     where
@@ -85,26 +87,20 @@ impl<'a> PackageUrl<'a> {
     {
         let mut t = ty.into();
         let mut n = name.into();
-        if validation::is_type_valid(&t) {
-            t = to_lowercase(t);
-            // lowercase name if required by type and needed
-            match t.as_ref() {
-                "bitbucket" | "deb" | "github" | "hex" | "npm" => {
-                    n = to_lowercase(n);
-                }
-                "pypi" => {
-                    n = to_lowercase(n);
-                    if n.chars().any(|c| c == '_') {
-                        n = Cow::Owned(n.replace('_', "-"));
-                    }
-                }
-                _ => {}
-            }
-
-            Ok(Self::new_unchecked(t, n))
-        } else {
-            Err(Error::InvalidType(t.to_string()))
+        if !validation::is_type_valid(&t) {
+            return Err(Error::InvalidType(t.to_string()));
         }
+        if n.is_empty() {
+            return Err(Error::MissingName);
+        }
+        t = to_lowercase(t);
+        if types::rules(&t).is_some_and(|rules| rules.lowercase_name) {
+            n = to_lowercase(n);
+        }
+        if t == "pypi" && n.chars().any(|c| c == '_') {
+            n = Cow::Owned(n.replace('_', "-"));
+        }
+        Ok(Self::new_unchecked(t, n))
     }
 
     /// Create a new Package URL without checking the type.
@@ -158,23 +154,14 @@ impl<'a> PackageUrl<'a> {
     where
         N: Into<Cow<'a, str>>,
     {
-        // Fail if namespace is prohibited for this type
-        match self.ty.as_ref() {
-            "bitnami" | "cargo" | "cocoapods" | "conda" | "cran" | "gem" | "hackage" | "mlflow"
-            | "nuget" | "oci" | "pub" | "pypi" => {
-                return Err(Error::TypeProhibitsNamespace(self.ty.to_string()));
-            }
-            _ => {}
+        let rules = types::rules(&self.ty);
+        if rules.is_some_and(|rules| matches!(rules.namespace, types::Namespace::Prohibited)) {
+            return Err(Error::TypeProhibitsNamespace(self.ty.to_string()));
         }
 
-        // Lowercase namespace if needed for this type
         let mut n = namespace.into();
-        match self.ty.as_ref() {
-            "apk" | "bitbucket" | "composer" | "deb" | "github" | "golang" | "hex" | "qpkg"
-            | "rpm" => {
-                n = to_lowercase(n);
-            }
-            _ => {}
+        if rules.is_some_and(|rules| rules.lowercase_namespace) {
+            n = to_lowercase(n);
         }
 
         self.namespace = Some(n);
@@ -188,11 +175,19 @@ impl<'a> PackageUrl<'a> {
     }
 
     /// Assign a version to the package.
+    ///
+    /// The version will be canonicalized depending on the type: for instance,
+    /// 'huggingface' versions are case-insensitive commit hashes, so the
+    /// version will be lowercased if needed.
     pub fn with_version<V>(&mut self, version: V) -> Result<&mut Self>
     where
         V: Into<Cow<'a, str>>,
     {
-        self.version = Some(version.into());
+        let mut v = version.into();
+        if types::rules(&self.ty).is_some_and(|rules| rules.lowercase_version) {
+            v = to_lowercase(v);
+        }
+        self.version = Some(v);
         Ok(self)
     }
 
@@ -247,6 +242,26 @@ impl<'a> PackageUrl<'a> {
             Ok(self)
         }
     }
+
+    /// Validate the purl against its type's rules from the purl-spec type
+    /// definitions: a required or prohibited namespace, required qualifiers,
+    /// and per-type name and version forms. Types without rules validate.
+    ///
+    /// Parsing validates automatically; the builder methods only check the
+    /// component at hand, so call this after assembling a purl whose rules
+    /// span components (e.g. a type that requires a namespace).
+    ///
+    /// # Example
+    /// ```rust
+    /// # extern crate packageurl;
+    /// let mut purl = packageurl::PackageUrl::new("swift", "Alamofire").unwrap();
+    /// assert!( purl.validate().is_err() ); // swift requires a namespace
+    /// purl.with_namespace("github.com/Alamofire").unwrap();
+    /// assert!( purl.validate().is_ok() );
+    /// ```
+    pub fn validate(&self) -> Result<()> {
+        types::validate(self)
+    }
 }
 
 impl FromStr for PackageUrl<'static> {
@@ -259,20 +274,8 @@ impl FromStr for PackageUrl<'static> {
         let (s, ql) = parser::parse_qualifiers(s)?;
         let (s, version) = parser::parse_version(s)?;
         let (s, ty) = parser::parse_type(s)?;
-        let (s, mut name) = parser::parse_name(s)?;
-        let (_, mut namespace) = parser::parse_namespace(s)?;
-
-        // Special rules for some types
-        match ty.as_ref() {
-            "bitbucket" | "github" => {
-                name = name.to_lowercase();
-                namespace = namespace.map(|ns| ns.to_lowercase());
-            }
-            "pypi" => {
-                name = name.replace('_', "-").to_lowercase();
-            }
-            _ => {}
-        };
+        let (s, name) = parser::parse_name(s)?;
+        let (_, namespace) = parser::parse_namespace(s)?;
 
         let mut purl = Self::new(ty, name)?;
         if let Some(ns) = namespace {
@@ -288,7 +291,8 @@ impl FromStr for PackageUrl<'static> {
             purl.add_qualifier(k, v)?;
         }
 
-        // The obtained package url
+        types::canonicalize(&mut purl);
+        purl.validate()?;
         Ok(purl)
     }
 }

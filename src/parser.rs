@@ -99,6 +99,10 @@ pub fn parse_type(input: &str) -> Result<(&str, String)> {
 }
 
 pub fn parse_name(input: &str) -> Result<(&str, String)> {
+    // A trailing '/' is an empty final segment: the purl has no name.
+    if input.ends_with('/') {
+        return Err(Error::MissingName);
+    }
     let (rem, name) = utils::rcut(input.trim_matches('/'), b'/');
     if name.is_empty() {
         Err(Error::MissingName)

@@ -38,6 +38,7 @@
 mod errors;
 mod parser;
 mod purl;
+mod types;
 mod utils;
 mod validation;
 

@@ -111,76 +111,11 @@ struct Components {
 // Known non-conformances
 // ---------------------------------------------------------------------------
 
-#[derive(Clone, Copy)]
-enum Category {
-    /// A type's name/version normalization rule is not fully applied.
-    Normalization,
-    /// A type-specific validity rule is not enforced when parsing.
-    ParseAcceptsInvalid,
-    /// The builder accepts components the spec rejects.
-    BuildAcceptsInvalid,
-}
-
-impl Category {
-    fn tag(self) -> &'static str {
-        match self {
-            Category::Normalization => "normalization",
-            Category::ParseAcceptsInvalid => "parse-accepts-invalid",
-            Category::BuildAcceptsInvalid => "build-accepts-invalid",
-        }
-    }
-}
-
-struct KnownGap {
-    key: &'static str,
-    category: Category,
-    note: &'static str,
-}
-
-/// Cases the crate does not yet satisfy, keyed by `logical_key` and grouped by
-/// cause. Rebuild from the `PURL_CONFORMANCE_DUMP` block after refreshing the suite.
-/// Total: 31 (Normalization: 6, ParseAcceptsInvalid: 12, BuildAcceptsInvalid: 13).
+/// Cases the crate does not yet satisfy, as `(logical_key, note)` entries.
+/// Rebuild from the `PURL_CONFORMANCE_DUMP` block after refreshing the suite.
+/// Empty: every case at the pinned suite commit is conformant.
 #[rustfmt::skip]
-static KNOWN_GAPS: &[KnownGap] = &[
-
-    // ── Type normalization: name/version case rules not applied (issue category 2; also huggingface, mlflow). ──
-    KnownGap { key: "composer-test.json::parse::purl=pkg:composer/Laravel/Laravel@5.5.0", category: Category::Normalization, note: "type-specific name/version normalization not applied" },
-    KnownGap { key: "composer-test.json::roundtrip::purl=pkg:composer/Laravel/Laravel@5.5.0", category: Category::Normalization, note: "type-specific name/version normalization not applied" },
-    KnownGap { key: "huggingface-test.json::parse::purl=pkg:huggingface/EleutherAI/gpt-neo-1.3B@797174552AE47F449AB70B684CABCB6603E5E85E", category: Category::Normalization, note: "type-specific name/version normalization not applied" },
-    KnownGap { key: "huggingface-test.json::roundtrip::purl=pkg:huggingface/EleutherAI/gpt-neo-1.3B@797174552AE47F449AB70B684CABCB6603E5E85E", category: Category::Normalization, note: "type-specific name/version normalization not applied" },
-    KnownGap { key: "mlflow-test.json::parse::purl=pkg:mlflow/CreditFraud@3?repository_url=https://adb-5245952564735461.0.azuredatabricks.net/api/2.0/mlflow", category: Category::Normalization, note: "type-specific name/version normalization not applied" },
-    KnownGap { key: "mlflow-test.json::roundtrip::purl=pkg:mlflow/CreditFraud@3?repository_url=https://adb-5245952564735461.0.azuredatabricks.net/api/2.0/mlflow", category: Category::Normalization, note: "type-specific name/version normalization not applied" },
-
-    // ── Required/typed components: per-type validity not enforced on parse (issue category 4). ──
-    KnownGap { key: "chrome-extension-test.json::parse::purl=pkg:chrome-extension/44444algnefjeiefhmpklpfiohadpglk", category: Category::ParseAcceptsInvalid, note: "type-specific validity rule not enforced on parse" },
-    KnownGap { key: "chrome-extension-test.json::parse::purl=pkg:chrome-extension/dlpngalgnefjeiefhmpklpfiohadpglk@1.2.3-beta", category: Category::ParseAcceptsInvalid, note: "type-specific validity rule not enforced on parse" },
-    KnownGap { key: "chrome-extension-test.json::parse::purl=pkg:chrome-extension/dlpngalgnefjeiefhmpklpfiohadpglk@1.2.3.4.5", category: Category::ParseAcceptsInvalid, note: "type-specific validity rule not enforced on parse" },
-    KnownGap { key: "chrome-extension-test.json::parse::purl=pkg:chrome-extension/dogs", category: Category::ParseAcceptsInvalid, note: "type-specific validity rule not enforced on parse" },
-    KnownGap { key: "cpan-test.json::parse::purl=pkg:cpan/GDT/URI::PackageURL", category: Category::ParseAcceptsInvalid, note: "type-specific validity rule not enforced on parse" },
-    KnownGap { key: "cpan-test.json::parse::purl=pkg:cpan/LWP::UserAgent@6.7.6", category: Category::ParseAcceptsInvalid, note: "type-specific validity rule not enforced on parse" },
-    KnownGap { key: "julia-test.json::parse::purl=pkg:julia/Dates", category: Category::ParseAcceptsInvalid, note: "type-specific validity rule not enforced on parse" },
-    KnownGap { key: "otp-test.json::parse::purl=pkg:otp/namespace/hex@2.1.1", category: Category::ParseAcceptsInvalid, note: "type-specific validity rule not enforced on parse" },
-    KnownGap { key: "swift-test.json::parse::purl=pkg:swift/Alamofire@5.4.3", category: Category::ParseAcceptsInvalid, note: "type-specific validity rule not enforced on parse" },
-    KnownGap { key: "swift-test.json::parse::purl=pkg:swift/github.com/Alamofire/@5.4.3", category: Category::ParseAcceptsInvalid, note: "type-specific validity rule not enforced on parse" },
-    KnownGap { key: "vcpkg-test.json::parse::purl=pkg:vcpkg/boost/asio@1.84.0", category: Category::ParseAcceptsInvalid, note: "type-specific validity rule not enforced on parse" },
-    KnownGap { key: "vscode-extension-test.json::parse::purl=pkg:vscode-extension/java@1.46.2025091308", category: Category::ParseAcceptsInvalid, note: "type-specific validity rule not enforced on parse" },
-
-
-    // ── Builder validation: the builder accepts components the spec rejects. ──
-    KnownGap { key: "cpan-test.json::build::build[type=cpan|ns=GDT|name=URI::PackageURL|ver=|qual=|sub=]", category: Category::BuildAcceptsInvalid, note: "builder accepts components the spec rejects" },
-    KnownGap { key: "cpan-test.json::build::build[type=cpan|ns=|name=Perl-Version|ver=1.013|qual=|sub=]", category: Category::BuildAcceptsInvalid, note: "builder accepts components the spec rejects" },
-    KnownGap { key: "cran-test.json::build::build[type=cran|ns=|name=|ver=0.9.1|qual=|sub=]", category: Category::BuildAcceptsInvalid, note: "builder accepts components the spec rejects" },
-    KnownGap { key: "hackage-test.json::build::build[type=hackage|ns=|name=|ver=|qual=|sub=]", category: Category::BuildAcceptsInvalid, note: "builder accepts components the spec rejects" },
-    KnownGap { key: "julia-test.json::build::build[type=julia|ns=|name=|ver=1.9.0|qual=uuid=ade2ca70-3891-5945-98fb-dc099432e06a|sub=]", category: Category::BuildAcceptsInvalid, note: "builder accepts components the spec rejects" },
-    KnownGap { key: "opam-test.json::build::build[type=opam|ns=|name=|ver=|qual=|sub=]", category: Category::BuildAcceptsInvalid, note: "builder accepts components the spec rejects" },
-    KnownGap { key: "otp-test.json::build::build[type=otp|ns=namespace|name=hex|ver=2.1.1|qual=|sub=]", category: Category::BuildAcceptsInvalid, note: "builder accepts components the spec rejects" },
-    KnownGap { key: "specification-test.json::build::build[type=maven|ns=|name=|ver=|qual=|sub=]", category: Category::BuildAcceptsInvalid, note: "builder accepts components the spec rejects" },
-    KnownGap { key: "swift-test.json::build::build[type=swift|ns=github.com/Alamofire|name=|ver=5.4.3|qual=|sub=]", category: Category::BuildAcceptsInvalid, note: "builder accepts components the spec rejects" },
-    KnownGap { key: "swift-test.json::build::build[type=swift|ns=|name=Alamofire|ver=5.4.3|qual=|sub=]", category: Category::BuildAcceptsInvalid, note: "builder accepts components the spec rejects" },
-    KnownGap { key: "vcpkg-test.json::build::build[type=vcpkg|ns=boost|name=asio|ver=1.84.0|qual=|sub=]", category: Category::BuildAcceptsInvalid, note: "builder accepts components the spec rejects" },
-    KnownGap { key: "vcpkg-test.json::build::build[type=vcpkg|ns=|name=|ver=1.0.8|qual=|sub=]", category: Category::BuildAcceptsInvalid, note: "builder accepts components the spec rejects" },
-    KnownGap { key: "vscode-extension-test.json::build::build[type=vscode-extension|ns=|name=java|ver=1.46.2025091308|qual=|sub=]", category: Category::BuildAcceptsInvalid, note: "builder accepts components the spec rejects" },
-];
+static KNOWN_GAPS: &[(&str, &str)] = &[];
 
 // ---------------------------------------------------------------------------
 // Evaluation
@@ -265,9 +200,9 @@ fn eval_build(case: &Case) -> Check {
     }
 }
 
-/// Build a canonical purl from decoded components via the public builder API.
-/// A null type or name maps to `""` (the builder rejects an empty type; an empty
-/// name currently builds, which surfaces as a tracked gap).
+/// Build a canonical purl from decoded components via the public builder API,
+/// validated like the parser validates. A null type or name maps to `""`,
+/// which the builder rejects.
 fn build(components: &Components) -> Result<String, packageurl::Error> {
     let mut purl = PackageUrl::new(
         components.ty.as_deref().unwrap_or(""),
@@ -285,6 +220,7 @@ fn build(components: &Components) -> Result<String, packageurl::Error> {
     for (key, value) in components.qualifiers.iter().flatten() {
         purl.add_qualifier(key.as_str(), value.as_str())?;
     }
+    purl.validate()?;
     Ok(purl.to_string())
 }
 
@@ -425,7 +361,7 @@ fn load() -> Vec<(String, Case)> {
 
 /// Print every non-conformant key so `KNOWN_GAPS` can be rebuilt. Enabled with
 /// `PURL_CONFORMANCE_DUMP=1`.
-fn dump(cases: &[(String, Case)], gaps: &HashMap<&str, &KnownGap>) {
+fn dump(cases: &[(String, Case)], gaps: &HashMap<&str, &str>) {
     let mut seen: HashSet<String> = HashSet::new();
     let mut lines: Vec<String> = Vec::new();
     for (file, case) in cases {
@@ -454,12 +390,11 @@ fn purl_spec_conformance() {
     let cases = load();
     assert!(!cases.is_empty(), "the vendored suite contains no cases");
 
-    let mut gaps: HashMap<&str, &KnownGap> = HashMap::new();
-    for gap in KNOWN_GAPS {
+    let mut gaps: HashMap<&str, &str> = HashMap::new();
+    for &(key, note) in KNOWN_GAPS {
         assert!(
-            gaps.insert(gap.key, gap).is_none(),
-            "duplicate KNOWN_GAPS key: {}",
-            gap.key
+            gaps.insert(key, note).is_none(),
+            "duplicate KNOWN_GAPS key: {key}"
         );
     }
 
@@ -479,8 +414,8 @@ fn purl_spec_conformance() {
 
     let mut resolved: Vec<String> = KNOWN_GAPS
         .iter()
-        .filter(|gap| !nonconformant.contains(gap.key))
-        .map(|gap| format!("  {}  [{}] — {}", gap.key, gap.category.tag(), gap.note))
+        .filter(|(key, _)| !nonconformant.contains(*key))
+        .map(|(key, note)| format!("  {key} — {note}"))
         .collect();
 
     if std::env::var_os("PURL_CONFORMANCE_DUMP").is_some() {
