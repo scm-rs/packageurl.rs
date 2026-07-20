@@ -38,6 +38,8 @@ const ENCODE_SET: &AsciiSet = &percent_encoding::CONTROLS
 
 const NAME_ENCODE_SET: &AsciiSet = &ENCODE_SET.add(b'/');
 
+const QUALIFIER_VALUE_ENCODE_SET: &AsciiSet = &ENCODE_SET.add(b'/').add(b',');
+
 /// A Package URL.
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -325,13 +327,13 @@ impl Display for PackageUrl<'_> {
             if let Some((k, v)) = iter.next() {
                 k.fmt(f)
                     .and(f.write_str("="))
-                    .and(v.encode(ENCODE_SET).fmt(f))?;
+                    .and(v.encode(QUALIFIER_VALUE_ENCODE_SET).fmt(f))?;
             }
             for (k, v) in iter {
                 f.write_str("&")
                     .and(k.fmt(f))
                     .and(f.write_str("="))
-                    .and(v.encode(ENCODE_SET).fmt(f))?;
+                    .and(v.encode(QUALIFIER_VALUE_ENCODE_SET).fmt(f))?;
             }
         }
 
@@ -420,7 +422,7 @@ mod tests {
         let encoded = purl.to_string();
         assert_eq!(
             encoded,
-            "pkg:deb/ubuntu/gnome-calculator@1:41.1-2ubuntu2?vcs_url=git%2Bhttps://salsa.debian.org/gnome-team/gnome-calculator.git%40debian/1%2541.1-2"
+            "pkg:deb/ubuntu/gnome-calculator@1:41.1-2ubuntu2?vcs_url=git%2Bhttps:%2F%2Fsalsa.debian.org%2Fgnome-team%2Fgnome-calculator.git%40debian%2F1%2541.1-2"
         );
     }
 
