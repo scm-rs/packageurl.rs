@@ -27,22 +27,19 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
 
-      - name: Install cargo-binstall
-        run: curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
-
-      - name: Install cargo-leptos
-        run: cargo binstall cargo-leptos --no-confirm
+      - name: Install Trunk
+        run: |
+          curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
+          cargo binstall trunk --no-confirm
 
       - name: Build
-        run: cargo leptos build --release
-
-      - name: Fix asset paths for GitHub Pages subpath
-        run: sed -i 's|<head>|<head><base href="/packageurl.rs/">|' target/site/index.html
+        run: trunk build --release --public-url /packageurl.rs/
+        working-directory: web
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v4
         with:
-          path: target/site
+          path: web/dist
 
   deploy:
     needs: build
