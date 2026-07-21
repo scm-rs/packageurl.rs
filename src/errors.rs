@@ -3,6 +3,7 @@
 //! [`thiserror`]: https://docs.rs/thiserror/
 
 #[derive(thiserror::Error, Debug, PartialEq, Eq)]
+#[non_exhaustive]
 pub enum Error {
     #[error("invalid scheme: {0:?}")]
     InvalidScheme(String),
