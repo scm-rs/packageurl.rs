@@ -1,3 +1,18 @@
+[workspace]
+members = [".", "web/app", "web/server"]
+default-members = ["."]
+
+[[workspace.metadata.leptos]]
+name = "packageurl-web"
+bin-package = "packageurl-web-server"
+lib-package = "packageurl-web"
+site-root = "target/site"
+site-pkg-dir = "pkg"
+style-file = "web/style/main.css"
+assets-dir = "web/public"
+site-addr = "127.0.0.1:3000"
+reload-port = 3001
+
 [package]
 name = "packageurl"
 version = "0.7.0"
