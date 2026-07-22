@@ -57,8 +57,7 @@ fn App() -> impl IntoView {
             return;
         }
         if let Some(url) = build_share_url(&purl) {
-            let _ = web_sys::window()
-                .map(|w| w.navigator().clipboard().write_text(&url));
+            let _ = web_sys::window().map(|w| w.navigator().clipboard().write_text(&url));
             set_copied.set(true);
             set_timeout(
                 move || set_copied.set(false),
