@@ -7,3 +7,7 @@ publish = false
 [dependencies]
 packageurl = { path = ".." }
 leptos = { version = "0.7", features = ["csr"] }
+
+[dependencies.web-sys]
+version = "0.3"
+features = ["UrlSearchParams"]

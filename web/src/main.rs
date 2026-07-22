@@ -5,9 +5,17 @@ fn main() {
     leptos::mount::mount_to_body(App);
 }
 
+fn initial_purl() -> String {
+    web_sys::window()
+        .and_then(|w| w.location().search().ok())
+        .and_then(|s| web_sys::UrlSearchParams::new_with_str(&s).ok())
+        .and_then(|p| p.get("purl"))
+        .unwrap_or_default()
+}
+
 #[component]
 fn App() -> impl IntoView {
-    let (input, set_input) = signal(String::new());
+    let (input, set_input) = signal(initial_purl());
 
     let result = move || {
         let value = input.get();
@@ -20,8 +28,7 @@ fn App() -> impl IntoView {
     view! {
         <div class="container">
             <header>
-                <img src="logo.png" alt="purl logo" class="logo" />
-                <h1>"PackageURL Validator"</h1>
+                <h1><span class="badge">"pkg:"</span>" PackageURL Validator"</h1>
                 <p class="subtitle">
                     "Paste a "
                     <a href="https://github.com/package-url/purl-spec" target="_blank">"Package URL"</a>
@@ -51,6 +58,10 @@ fn App() -> impl IntoView {
                     }.into_any(),
                 }}
             </div>
+
+            <footer>
+                <a href="https://github.com/scm-rs/packageurl.rs" target="_blank">"github.com/scm-rs/packageurl.rs"</a>
+            </footer>
         </div>
     }
 }
