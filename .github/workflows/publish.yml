@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: write # for creating releases
+  id-token: write # for trusted publishing to crates.io
 
 jobs:
 
@@ -17,5 +18,3 @@ jobs:
     needs:
       - ci
     uses: scm-rs/shared-workflows/.github/workflows/release.yaml@main
-    secrets:
-      CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
