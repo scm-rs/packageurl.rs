@@ -85,8 +85,14 @@ h1 {
 .subtitle a { color: var(--link); text-decoration: none; }
 .subtitle a:hover { text-decoration: underline; }
 
+.input-row {
+    display: flex;
+    gap: 0.5rem;
+}
+
 .purl-input {
-    width: 100%;
+    flex: 1;
+    min-width: 0;
     padding: 0.75rem 1rem;
     font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
     font-size: 0.95rem;
@@ -101,6 +107,33 @@ h1 {
 .purl-input:focus {
     border-color: var(--input-focus);
     box-shadow: 0 0 0 3px color-mix(in srgb, var(--input-focus) 20%, transparent);
+}
+
+.share-btn {
+    padding: 0.75rem 1.25rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border: 1.5px solid var(--input-border);
+    border-radius: 10px;
+    background: var(--input-bg);
+    color: var(--fg);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.share-btn:hover:not(:disabled) {
+    border-color: var(--input-focus);
+}
+
+.share-btn:disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+
+.share-btn.copied {
+    border-color: var(--success-border);
+    color: #16a34a;
 }
 
 .result { margin-top: 1.25rem; }

@@ -13,9 +13,19 @@ fn initial_purl() -> String {
         .unwrap_or_default()
 }
 
+fn build_share_url(purl: &str) -> Option<String> {
+    let window = web_sys::window()?;
+    let location = window.location();
+    let origin = location.origin().ok()?;
+    let pathname = location.pathname().ok()?;
+    let encoded = js_sys::encode_uri_component(purl);
+    Some(format!("{origin}{pathname}?purl={encoded}"))
+}
+
 #[component]
 fn App() -> impl IntoView {
     let (input, set_input) = signal(initial_purl());
+    let (copied, set_copied) = signal(false);
 
     let result = move || {
         let value = input.get();
@@ -23,6 +33,39 @@ fn App() -> impl IntoView {
             return None;
         }
         Some(packageurl::PackageUrl::from_str(&value))
+    };
+
+    Effect::new(move |_| {
+        let purl = input.get();
+        if let Some(window) = web_sys::window() {
+            let pathname = window.location().pathname().unwrap_or_default();
+            let url = if purl.is_empty() {
+                pathname
+            } else {
+                let encoded = js_sys::encode_uri_component(&purl);
+                format!("{pathname}?purl={encoded}")
+            };
+            let _ = window.history().and_then(|h| {
+                h.replace_state_with_url(&wasm_bindgen::JsValue::NULL, "", Some(&url))
+            });
+        }
+    });
+
+    let copy_link = move |_| {
+        let purl = input.get();
+        if purl.is_empty() {
+            return;
+        }
+        if let Some(url) = build_share_url(&purl) {
+            if let Some(window) = web_sys::window() {
+                let _ = window.navigator().clipboard().write_text(&url);
+                set_copied.set(true);
+                set_timeout(
+                    move || set_copied.set(false),
+                    std::time::Duration::from_secs(2),
+                );
+            }
+        }
     };
 
     view! {
@@ -36,15 +79,26 @@ fn App() -> impl IntoView {
                 </p>
             </header>
 
-            <input
-                type="text"
-                placeholder="pkg:type/namespace/name@version?key=value#subpath"
-                class="purl-input"
-                prop:value=move || input.get()
-                on:input=move |ev| {
-                    set_input.set(event_target_value(&ev));
-                }
-            />
+            <div class="input-row">
+                <input
+                    type="text"
+                    placeholder="pkg:type/namespace/name@version?key=value#subpath"
+                    class="purl-input"
+                    prop:value=move || input.get()
+                    on:input=move |ev| {
+                        set_input.set(event_target_value(&ev));
+                    }
+                />
+                <button
+                    class="share-btn"
+                    class:copied=move || copied.get()
+                    title="Copy shareable link"
+                    on:click=copy_link
+                    disabled=move || input.get().is_empty()
+                >
+                    {move || if copied.get() { "Copied!" } else { "Share" }}
+                </button>
+            </div>
 
             <div class="result">
                 {move || match result() {
