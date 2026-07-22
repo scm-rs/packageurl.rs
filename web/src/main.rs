@@ -56,15 +56,15 @@ fn App() -> impl IntoView {
         if purl.is_empty() {
             return;
         }
-        if let Some(url) = build_share_url(&purl) {
-            if let Some(window) = web_sys::window() {
-                let _ = window.navigator().clipboard().write_text(&url);
-                set_copied.set(true);
-                set_timeout(
-                    move || set_copied.set(false),
-                    std::time::Duration::from_secs(2),
-                );
-            }
+        if let Some(url) = build_share_url(&purl)
+            && let Some(window) = web_sys::window()
+        {
+            let _ = window.navigator().clipboard().write_text(&url);
+            set_copied.set(true);
+            set_timeout(
+                move || set_copied.set(false),
+                std::time::Duration::from_secs(2),
+            );
         }
     };
 
