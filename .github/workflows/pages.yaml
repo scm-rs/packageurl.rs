@@ -30,7 +30,7 @@ jobs:
       - name: Install Trunk
         run: |
           curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
-          cargo binstall trunk --no-confirm
+          cargo binstall trunk --no-confirm --force
 
       - name: Build
         run: trunk build --release --public-url /packageurl.rs/
