@@ -21,7 +21,7 @@ repository = "https://github.com/scm-rs/packageurl.rs"
 readme = "README.md"
 keywords = ["purl", "package-url"]
 categories = ["parser-implementations", "encoding", "development-tools"]
-rust-version = "1.86.0"
+rust-version = "1.87.0"
 
 # The purl-spec conformance suite vendored under tests/purl-spec is test-only;
 # keep it out of the published crate.
