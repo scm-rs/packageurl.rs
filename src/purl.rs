@@ -39,7 +39,7 @@ const ENCODE_SET: &AsciiSet = &percent_encoding::CONTROLS
 
 const NAME_ENCODE_SET: &AsciiSet = &ENCODE_SET.add(b'/');
 
-const QUALIFIER_VALUE_ENCODE_SET: &AsciiSet = &ENCODE_SET.add(b'/').add(b',');
+const QUALIFIER_VALUE_ENCODE_SET: &AsciiSet = &ENCODE_SET.add(b'/').add(b',').add(b'&');
 
 /// A Package URL.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -428,6 +428,37 @@ mod tests {
             encoded,
             "pkg:deb/ubuntu/gnome-calculator@1:41.1-2ubuntu2?vcs_url=git%2Bhttps:%2F%2Fsalsa.debian.org%2Fgnome-team%2Fgnome-calculator.git%40debian%2F1%2541.1-2"
         );
+    }
+
+    #[test]
+    fn test_qualifier_ampersand_roundtrip() {
+        for (key, value) in [
+            (
+                "download_url",
+                "https://example.com/archive?platform=linux&arch=arm64",
+            ),
+            ("file_name", "a&b"),
+            ("file_name", "&"),
+            ("file_name", "a&&b"),
+            ("file_name", "a%26b"),
+            ("file_name", "ordinary"),
+        ] {
+            let mut purl = PackageUrl::new("generic", "archive").unwrap();
+            purl.add_qualifier(key, value).unwrap();
+            purl.add_qualifier("arch", "arm64").unwrap();
+            let encoded = purl.to_string();
+            assert_eq!(encoded.matches('&').count(), 1, "{encoded}");
+            assert_eq!(PackageUrl::from_str(&encoded).unwrap(), purl, "{value}");
+        }
+    }
+
+    #[test]
+    fn test_percent_encoded_ampersand_stays_in_qualifier() {
+        let canonical = "pkg:generic/archive?file_name=a%26b&os=linux";
+        let purl = PackageUrl::from_str(canonical).unwrap();
+        assert_eq!(purl.qualifiers().get("file_name").unwrap(), "a&b");
+        assert_eq!(purl.to_string(), canonical);
+        assert_eq!(PackageUrl::from_str(&purl.to_string()).unwrap(), purl);
     }
 
     #[cfg(feature = "serde")]
