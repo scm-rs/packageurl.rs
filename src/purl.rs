@@ -97,8 +97,8 @@ impl<'a> PackageUrl<'a> {
         if types::rules(&t).is_some_and(|rules| rules.lowercase_name) {
             n = to_lowercase(n);
         }
-        if t == "pypi" && n.chars().any(|c| c == '_') {
-            n = Cow::Owned(n.replace('_', "-"));
+        if t == "pypi" && n.chars().any(|c| matches!(c, '_' | '.' | '-')) {
+            n = Cow::Owned(normalize_pypi_name(&n));
         }
         Ok(Self::new_unchecked(t, n))
     }
@@ -360,6 +360,26 @@ impl Display for PackageUrl<'_> {
     }
 }
 
+/// Normalizes a PyPI project name: every run of `-`, `_` and `.` becomes a
+/// single `-` (Python Packaging User Guide, "Name normalization"; PEP 503).
+/// The name is already lowercased by the type rules.
+fn normalize_pypi_name(name: &str) -> String {
+    let mut out = String::with_capacity(name.len());
+    let mut in_separator_run = false;
+    for c in name.chars() {
+        if matches!(c, '-' | '_' | '.') {
+            if !in_separator_run {
+                out.push('-');
+            }
+            in_separator_run = true;
+        } else {
+            out.push(c);
+            in_separator_run = false;
+        }
+    }
+    out
+}
+
 #[cfg(test)]
 mod tests {
 
@@ -493,5 +513,46 @@ mod tests {
             let actual = PackageUrl::from_str(purl).unwrap().to_string();
             assert_eq!(actual, expected);
         }
+    }
+    #[test]
+    fn test_pypi_name_normalization() {
+        for (input, expected) in [
+            ("pkg:pypi/friendly.bard@1.0", "friendly-bard"),
+            ("pkg:pypi/friendly--bard@1.0", "friendly-bard"),
+            ("pkg:pypi/friendly__bard@1.0", "friendly-bard"),
+            (
+                "pkg:pypi/My.PyPI_.--._Package@1.11.1.dev1",
+                "my-pypi-package",
+            ),
+            ("pkg:pypi/django_rest-framework", "django-rest-framework"),
+        ] {
+            let purl = PackageUrl::from_str(input).unwrap();
+            assert_eq!(purl.name(), expected, "{input}");
+        }
+        let purl = PackageUrl::new("pypi", "Zope.Interface").unwrap();
+        assert_eq!(purl.to_string(), "pkg:pypi/zope-interface");
+    }
+
+    #[test]
+    fn test_brew_is_lowercased() {
+        let purl = PackageUrl::from_str("pkg:brew/Homebrew/Core/SQLite@3.43.2").unwrap();
+        assert_eq!(purl.namespace(), Some("homebrew/core"));
+        assert_eq!(purl.name(), "sqlite");
+        assert_eq!(purl.to_string(), "pkg:brew/homebrew/core/sqlite@3.43.2");
+    }
+
+    #[test]
+    fn test_cpan_namespace_is_optional() {
+        let purl = PackageUrl::from_str("pkg:cpan/DateTime@1.55?author=DROLSKY").unwrap();
+        assert_eq!(purl.namespace(), None);
+        assert_eq!(purl.name(), "DateTime");
+        assert_eq!(purl.to_string(), "pkg:cpan/DateTime@1.55?author=DROLSKY");
+        assert!(
+            PackageUrl::new("cpan", "URI-PackageURL")
+                .unwrap()
+                .validate()
+                .is_ok()
+        );
+        assert!(PackageUrl::from_str("pkg:cpan/URI::PackageURL").is_err());
     }
 }
