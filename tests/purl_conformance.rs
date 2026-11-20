@@ -52,6 +52,8 @@ struct Case {
 enum TestType {
     Parse,
     Build,
+    /// Called `roundtrip` before purl-spec renamed it to `validate`.
+    #[serde(alias = "validate")]
     Roundtrip,
 }
 
@@ -113,9 +115,23 @@ struct Components {
 
 /// Cases the crate does not yet satisfy, as `(logical_key, note)` entries.
 /// Rebuild from the `PURL_CONFORMANCE_DUMP` block after refreshing the suite.
-/// Empty: every case at the pinned suite commit is conformant.
 #[rustfmt::skip]
-static KNOWN_GAPS: &[(&str, &str)] = &[];
+static KNOWN_GAPS: &[(&str, &str)] = &[
+    // The suite contradicts itself: the same inputs also have `validate`
+    // cases that expect the uppercase keys to be lowercased, not rejected.
+    ("gem-test.json::parse::purl=pkg:gem/jruby-launcher@1.1.2?Platform=java", "uppercase qualifier key: parse expects failure, validate expects lowercasing"),
+    ("rpm-test.json::parse::purl=pkg:Rpm/fedora/curl@7.50.3-1.fc25?Arch=i386&Distro=fedora-25", "uppercase qualifier key: parse expects failure, validate expects lowercasing"),
+    // git-definition.json says namespace and name are case sensitive and the
+    // namespace is the host only, so the name holds unencoded '/'.
+    ("git-test.json::build::build[type=git|ns=codeberg.org|name=forgejo/forgejo|ver=a72d2c07cfca03b55371089de6aa230d8c951fa0|qual=|sub=]", "git name with '/' is not percent-encoded"),
+    ("git-test.json::build::build[type=git|ns=codeberg.org|name=forgejo/forgejo|ver=a72d2c07cfca03b55371089de6aa230d8c951fa0|qual=|sub=options/locale_readme.md]", "git name with '/' is not percent-encoded"),
+    ("git-test.json::parse::purl=pkg:git/codeberg.org/forgejo/forgejo@a72d2c07cfca03b55371089de6aa230d8c951fa0", "git namespace is the host only, the rest is the name"),
+    ("git-test.json::parse::purl=pkg:git/codeberg.org/forgejo/forgejo@a72d2c07cfca03b55371089de6aa230d8c951fa0#options/locale_readme.md", "git namespace is the host only, the rest is the name"),
+    ("git-test.json::roundtrip::purl=pkg:git/github/Package-url/purl-Spec@244fd47e07d1004f0aed9c", "git lowercasing contradicts case_sensitive: true in git-definition.json"),
+    // The expected message was pasted into the subpath field of these cases.
+    ("pypi-test.json::build::build[type=pypi|ns=|name=My.PyPI_.--._Package|ver=1.11.1.dev1|qual=|sub=Applied normalization_rules to convert input string to valid form.]", "suite bug: message text in the subpath input"),
+    ("pypi-test.json::parse::purl=pkg:pypi/My.PyPI_.--._Package@1.11.1.dev1", "suite bug: message text in the expected subpath"),
+];
 
 // ---------------------------------------------------------------------------
 // Evaluation
