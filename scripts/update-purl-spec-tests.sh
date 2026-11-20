@@ -11,7 +11,7 @@
 # PURL_CONFORMANCE_DUMP=1 cargo test --test purl_conformance -- --nocapture
 set -eu
 
-PIN=995f3878f5bb6979bc6560cd747e422e8262f18b
+PIN=a59c3099779415ea97064f77747fc76dda9610a1
 REPO=https://github.com/package-url/purl-spec.git
 
 ROOT=$(git -C "$(dirname "$0")" rev-parse --show-toplevel)
