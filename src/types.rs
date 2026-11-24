@@ -18,6 +18,7 @@ pub(crate) struct TypeRules {
     pub(crate) namespace: Namespace,
     pub(crate) lowercase_name: bool,
     pub(crate) lowercase_namespace: bool,
+    pub(crate) uppercase_namespace: bool,
     pub(crate) lowercase_version: bool,
     pub(crate) required_qualifiers: &'static [&'static str],
 }
@@ -28,6 +29,7 @@ impl TypeRules {
         namespace: Namespace::Optional,
         lowercase_name: false,
         lowercase_namespace: false,
+        uppercase_namespace: false,
         lowercase_version: false,
         required_qualifiers: &[],
     };
@@ -44,7 +46,7 @@ static RULES: &[TypeRules] = &[
     TypeRules { ty: "cocoapods", namespace: Namespace::Prohibited, ..TypeRules::DEFAULT },
     TypeRules { ty: "composer", namespace: Namespace::Required, lowercase_name: true, lowercase_namespace: true, ..TypeRules::DEFAULT },
     TypeRules { ty: "conda", namespace: Namespace::Prohibited, ..TypeRules::DEFAULT },
-    TypeRules { ty: "cpan", ..TypeRules::DEFAULT },
+    TypeRules { ty: "cpan", uppercase_namespace: true, ..TypeRules::DEFAULT },
     TypeRules { ty: "cran", namespace: Namespace::Prohibited, ..TypeRules::DEFAULT },
     TypeRules { ty: "deb", lowercase_name: true, lowercase_namespace: true, ..TypeRules::DEFAULT },
     TypeRules { ty: "gem", namespace: Namespace::Prohibited, ..TypeRules::DEFAULT },
