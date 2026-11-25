@@ -30,6 +30,15 @@ pub(crate) fn to_lowercase<'a>(s: impl Into<Cow<'a, str>>) -> Cow<'a, str> {
     }
 }
 
+pub(crate) fn to_uppercase<'a>(s: impl Into<Cow<'a, str>>) -> Cow<'a, str> {
+    let s = s.into();
+    if s.chars().any(|c| c.is_lowercase()) {
+        Cow::Owned(s.to_uppercase())
+    } else {
+        s
+    }
+}
+
 #[cfg(test)]
 mod tests {
 
@@ -56,5 +65,13 @@ mod tests {
         assert_eq!(to_lowercase("FoO"), "foo");
         assert_eq!(to_lowercase("fOo"), "foo");
         assert_eq!(to_lowercase("FOO"), "foo");
+    }
+
+    #[test]
+    fn to_uppercase_simple() {
+        assert_eq!(to_uppercase("FOO"), "FOO");
+        assert_eq!(to_uppercase("Foo"), "FOO");
+        assert_eq!(to_uppercase("fOo"), "FOO");
+        assert_eq!(to_uppercase("foo"), "FOO");
     }
 }

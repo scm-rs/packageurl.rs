@@ -13,7 +13,7 @@ use super::errors::Error;
 use super::errors::Result;
 use super::parser;
 use super::types;
-use super::utils::{PercentCodec, to_lowercase};
+use super::utils::{PercentCodec, to_lowercase, to_uppercase};
 use super::validation;
 
 const ENCODE_SET: &AsciiSet = &percent_encoding::CONTROLS
@@ -162,6 +162,9 @@ impl<'a> PackageUrl<'a> {
         let mut n = namespace.into();
         if rules.is_some_and(|rules| rules.lowercase_namespace) {
             n = to_lowercase(n);
+        }
+        if rules.is_some_and(|rules| rules.uppercase_namespace) {
+            n = to_uppercase(n);
         }
 
         self.namespace = Some(n);
@@ -539,6 +542,18 @@ mod tests {
         assert_eq!(purl.namespace(), Some("homebrew/core"));
         assert_eq!(purl.name(), "sqlite");
         assert_eq!(purl.to_string(), "pkg:brew/homebrew/core/sqlite@3.43.2");
+    }
+
+    #[test]
+    fn test_cpan_namespace_is_uppercased() {
+        let purl = PackageUrl::from_str("pkg:cpan/drolsky/DateTime@1.55").unwrap();
+        assert_eq!(purl.namespace(), Some("DROLSKY"));
+        assert_eq!(purl.name(), "DateTime");
+        assert_eq!(purl.to_string(), "pkg:cpan/DROLSKY/DateTime@1.55");
+
+        let mut purl = PackageUrl::new("cpan", "DateTime").unwrap();
+        purl.with_namespace("Drolsky").unwrap();
+        assert_eq!(purl.to_string(), "pkg:cpan/DROLSKY/DateTime");
     }
 
     #[test]
